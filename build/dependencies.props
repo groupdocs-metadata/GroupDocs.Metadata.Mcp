@@ -1,0 +1,36 @@
+<Project>
+
+  <PropertyGroup Label="SDK Versions">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package information">
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/groupdocs/groupdocs-metadata-mcp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/groupdocs/groupdocs-metadata-mcp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Authors>GroupDocs Contributors</Authors>
+    <Company>Aspose</Company>
+    <Copyright>Copyright © Aspose Pty Ltd 2025</Copyright>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder>true</AllowedOutputExtensionsInPackageBuildOutputFolder>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Package Versions">
+    <GroupDocsMetadataMcp>26.4.0</GroupDocsMetadataMcp>
+  </PropertyGroup>
+
+  <PropertyGroup Label="External Dependency Versions">
+    <GroupDocsMcpCore>26.4.0</GroupDocsMcpCore>
+    <GroupDocsMetadata>26.1.0</GroupDocsMetadata>
+    <MicrosoftExtensionsHosting>10.0.5</MicrosoftExtensionsHosting>
+    <ModelContextProtocol>1.1.0</ModelContextProtocol>
+    <MicrosoftSourceLinkGithub>8.0.0</MicrosoftSourceLinkGithub>
+  </PropertyGroup>
+
+  <PropertyGroup Label="NuGet Common Settings">
+    <PackageReleaseNotes>https://github.com/groupdocs/groupdocs-metadata-mcp/releases/tag/$(GroupDocsMetadataMcp)</PackageReleaseNotes>
+  </PropertyGroup>
+
+</Project>

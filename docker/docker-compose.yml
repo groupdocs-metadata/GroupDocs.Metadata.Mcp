@@ -1,0 +1,17 @@
+services:
+  groupdocs-metadata-mcp:
+    image: ghcr.io/groupdocs/metadata-mcp:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./files:/data/input:ro
+      - ./output:/data/output
+      - ./license:/license:ro
+    environment:
+      GROUPDOCS_MCP_INPUT_PATH: /data/input
+      GROUPDOCS_MCP_OUTPUT_PATH: /data/output
+      GROUPDOCS_LICENSE_PATH: /license/GroupDocs.Total.lic
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
