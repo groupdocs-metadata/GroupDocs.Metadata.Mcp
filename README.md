@@ -5,11 +5,22 @@ for Claude, Cursor, GitHub Copilot, and other MCP agents.
 
 ## Installation
 
+Requires [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
+
+**Run directly with `dnx` (recommended — no install step):**
+
 ```bash
-dotnet add package GroupDocs.Metadata.Mcp
+dnx GroupDocs.Metadata.Mcp@26.4.0 --yes
 ```
 
-Or run via Docker:
+**Or install as a global dotnet tool:**
+
+```bash
+dotnet tool install -g GroupDocs.Metadata.Mcp
+groupdocs-metadata-mcp
+```
+
+**Or run via Docker:**
 
 ```bash
 docker run --rm -i \
@@ -40,10 +51,41 @@ docker run --rm -i \
 {
   "mcpServers": {
     "groupdocs-metadata": {
-      "command": "dotnet",
-      "args": ["GroupDocs.Metadata.Mcp.dll"],
+      "type": "stdio",
+      "command": "dnx",
+      "args": ["GroupDocs.Metadata.Mcp@26.4.0", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "/path/to/documents"
+      }
+    }
+  }
+}
+```
+
+## Usage with VS Code / GitHub Copilot
+
+NuGet.org generates a ready-to-use `mcp.json` snippet on the [package page](https://www.nuget.org/packages/GroupDocs.Metadata.Mcp).
+Copy it directly into your `.vscode/mcp.json`.
+
+Alternatively, add manually to `.vscode/mcp.json`:
+
+```json
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "storage_path",
+      "description": "Base folder for input and output files.",
+      "password": false
+    }
+  ],
+  "servers": {
+    "groupdocs-metadata": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": ["GroupDocs.Metadata.Mcp@26.4.0", "--yes"],
+      "env": {
+        "GROUPDOCS_MCP_STORAGE_PATH": "${input:storage_path}"
       }
     }
   }

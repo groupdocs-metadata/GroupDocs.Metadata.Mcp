@@ -6,20 +6,16 @@ on:
       - main
     paths:
       - 'src/**'
-      - 'tests/**'
-      - '*.sln'
       - '**/*.csproj'
-      - 'Directory.Build.props'
+      - 'src/Directory.Build.props'
       - 'build/**'
   pull_request:
     branches:
       - main
     paths:
       - 'src/**'
-      - 'tests/**'
-      - '*.sln'
       - '**/*.csproj'
-      - 'Directory.Build.props'
+      - 'src/Directory.Build.props'
       - 'build/**'
   workflow_dispatch:
 
@@ -46,15 +42,15 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Restore dependencies
-        run: dotnet restore ./GroupDocs.Metadata.Mcp.sln
+        run: dotnet restore ./src/GroupDocs.Metadata.Mcp.sln
 
       - name: Build solution
-        run: dotnet build ./GroupDocs.Metadata.Mcp.sln --no-restore --configuration Release
+        run: dotnet build ./src/GroupDocs.Metadata.Mcp.sln --no-restore --configuration Release
 
       - name: Run tests
         run: >
           dotnet test
-          ./tests/GroupDocs.Metadata.Mcp.Tests/GroupDocs.Metadata.Mcp.Tests.csproj
+          ./src/GroupDocs.Metadata.Mcp.Tests/GroupDocs.Metadata.Mcp.Tests.csproj
           --no-build
           --configuration Release
           --verbosity normal

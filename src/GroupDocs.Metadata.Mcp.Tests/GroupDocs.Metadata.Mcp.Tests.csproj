@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\GroupDocs.Metadata.Mcp\GroupDocs.Metadata.Mcp.csproj" />
+    <ProjectReference Include="..\GroupDocs.Metadata.Mcp\GroupDocs.Metadata.Mcp.csproj" />
   </ItemGroup>
 
 </Project>

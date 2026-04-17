@@ -40,6 +40,6 @@ $buildSuffix = @{ $true = "$($suffix)-$($commitHash)"; $false = "$($commitHash)"
 
 Write-Host "build: Build version suffix is $buildSuffix"
 
-exec { & dotnet build GroupDocs.Metadata.Mcp.sln -c Release --version-suffix=$buildSuffix -v q /nologo }
+exec { & dotnet build src\GroupDocs.Metadata.Mcp.sln -c Release --version-suffix=$buildSuffix -v q /nologo }
 
 exec { & dotnet pack .\src\GroupDocs.Metadata.Mcp\GroupDocs.Metadata.Mcp.csproj -c Release -o .\build_out --include-symbols -p:SymbolPackageFormat=snupkg --no-build }

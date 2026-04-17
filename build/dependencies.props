@@ -11,7 +11,7 @@
     <RepositoryType>git</RepositoryType>
     <Authors>GroupDocs Contributors</Authors>
     <Company>Aspose</Company>
-    <Copyright>Copyright © Aspose Pty Ltd 2025</Copyright>
+    <Copyright>Copyright © Aspose Pty Ltd $([System.DateTime]::Now.Year)</Copyright>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>true</AllowedOutputExtensionsInPackageBuildOutputFolder>

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
+  "description": "MCP server exposing GroupDocs.Metadata for .NET — read, write, and remove metadata properties from documents, images, and media files via AI agents.",
+  "name": "io.github.groupdocs/groupdocs-metadata-mcp",
+  "version": "26.4.0",
+  "packages": [
+    {
+      "registryType": "nuget",
+      "registryBaseUrl": "https://api.nuget.org",
+      "identifier": "GroupDocs.Metadata.Mcp",
+      "version": "26.4.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [],
+      "environmentVariables": [
+        {
+          "name": "GROUPDOCS_MCP_STORAGE_PATH",
+          "value": "{storage_path}",
+          "variables": {
+            "storage_path": {
+              "description": "Base folder for input and output files.",
+              "isRequired": false,
+              "isSecret": false
+            }
+          }
+        },
+        {
+          "name": "GROUPDOCS_MCP_INPUT_PATH",
+          "value": "{input_path}",
+          "variables": {
+            "input_path": {
+              "description": "Folder to read input files from. Defaults to GROUPDOCS_MCP_STORAGE_PATH.",
+              "isRequired": false,
+              "isSecret": false
+            }
+          }
+        },
+        {
+          "name": "GROUPDOCS_MCP_OUTPUT_PATH",
+          "value": "{output_path}",
+          "variables": {
+            "output_path": {
+              "description": "Folder to write output files to. Defaults to GROUPDOCS_MCP_STORAGE_PATH.",
+              "isRequired": false,
+              "isSecret": false
+            }
+          }
+        },
+        {
+          "name": "GROUPDOCS_LICENSE_PATH",
+          "value": "{license_path}",
+          "variables": {
+            "license_path": {
+              "description": "Path to the GroupDocs.Total.lic license file. Omit to run in evaluation mode.",
+              "isRequired": false,
+              "isSecret": false
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "repository": {
+    "url": "https://github.com/groupdocs/groupdocs-metadata-mcp",
+    "source": "github"
+  }
+}

@@ -8,15 +8,21 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>MCP server exposing GroupDocs.Metadata for .NET — read, write, and remove metadata properties from documents, images, and media files via AI agents.</Description>
-    <PackageTags>groupdocs;metadata;mcp;model-context-protocol;ai;document-metadata</PackageTags>
+    <PackageTags>groupdocs;metadata;mcp;model-context-protocol;mcp-server;dotnet-tool;ai;document-metadata</PackageTags>
     <PackageIcon>images\icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
+    <!-- Mark as MCP server for NuGet.org discovery (packagetype=mcpserver filter) -->
+    <PackageTypes>McpServer</PackageTypes>
+    <!-- CLI tool name for dnx / dotnet tool install invocation -->
+    <ToolCommandName>groupdocs-metadata-mcp</ToolCommandName>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\assets\icon.png" Pack="true" Visible="false" PackagePath="images\icon.png" />
     <None Include="..\..\README.md" Pack="true" PackagePath="/" />
+    <!-- server.json — read by NuGet.org to generate mcp.json snippets on the package page -->
+    <None Include=".mcp\server.json" Pack="true" PackagePath=".mcp/server.json" />
   </ItemGroup>
 
   <ItemGroup>

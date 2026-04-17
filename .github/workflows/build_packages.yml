@@ -19,4 +19,4 @@ jobs:
           global-json-file: global.json
 
       - name: Build project
-        run: dotnet build ./GroupDocs.Metadata.Mcp.sln
+        run: dotnet build ./src/GroupDocs.Metadata.Mcp.sln
