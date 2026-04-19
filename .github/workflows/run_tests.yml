@@ -20,6 +20,49 @@ on:
   workflow_dispatch:
 
 jobs:
+  validate-mcp-manifest:
+    name: Validate .mcp/server.json schema
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli ajv-formats
+
+      - name: Fetch MCP server.json schema
+        run: |
+          SCHEMA_URL=$(jq -r '."$schema"' src/GroupDocs.Metadata.Mcp/.mcp/server.json)
+          echo "Fetching schema from $SCHEMA_URL"
+          curl -fsSL -o server.schema.json "$SCHEMA_URL"
+
+      - name: Validate server.json
+        run: |
+          ajv validate \
+            --spec=draft2020 \
+            -c ajv-formats \
+            -s server.schema.json \
+            -d src/GroupDocs.Metadata.Mcp/.mcp/server.json \
+            --all-errors
+
+      - name: Confirm server.json version matches dependencies.props
+        shell: pwsh
+        run: |
+          [xml]$deps = Get-Content build/dependencies.props
+          $expected = $deps.SelectSingleNode('//GroupDocsMetadataMcp').InnerText.Trim()
+          $serverJson = Get-Content src/GroupDocs.Metadata.Mcp/.mcp/server.json -Raw
+          $pattern = '"version"\s*:\s*"' + [regex]::Escape($expected) + '"'
+          $count = [regex]::Matches($serverJson, $pattern).Count
+          if ($count -ne 2) {
+            Write-Error "server.json version drift: expected both version fields = '$expected' (found $count of 2)."
+            exit 1
+          }
+          Write-Host "server.json version '$expected' matches dependencies.props"
+
   test:
     name: Test on .NET ${{ matrix.dotnet-version }}
     runs-on: windows-latest

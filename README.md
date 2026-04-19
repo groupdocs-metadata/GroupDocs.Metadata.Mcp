@@ -24,8 +24,7 @@ groupdocs-metadata-mcp
 
 ```bash
 docker run --rm -i \
-  -v $(pwd)/files:/data/input:ro \
-  -v $(pwd)/output:/data/output \
+  -v $(pwd)/documents:/data \
   ghcr.io/groupdocs/metadata-mcp:latest
 ```
 
@@ -40,9 +39,8 @@ docker run --rm -i \
 
 | Variable | Description | Default |
 |---|---|---|
-| `GROUPDOCS_MCP_STORAGE_PATH` | Base folder for input/output files | current directory |
-| `GROUPDOCS_MCP_INPUT_PATH` | Input files folder | `GROUPDOCS_MCP_STORAGE_PATH` |
-| `GROUPDOCS_MCP_OUTPUT_PATH` | Output files folder | `GROUPDOCS_MCP_STORAGE_PATH` |
+| `GROUPDOCS_MCP_STORAGE_PATH` | Base folder for input and output files | current directory |
+| `GROUPDOCS_MCP_OUTPUT_PATH` | *(Optional)* separate folder for output files | `GROUPDOCS_MCP_STORAGE_PATH` |
 | `GROUPDOCS_LICENSE_PATH` | Path to GroupDocs license file | (evaluation mode) |
 
 ## Usage with Claude Desktop

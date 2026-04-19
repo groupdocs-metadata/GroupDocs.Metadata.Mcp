@@ -4,6 +4,12 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <PropertyGroup Label="Reproducible build">
+    <Deterministic>true</Deterministic>
+    <!-- Normalizes paths inside .pdb/.dll on CI for reproducible output -->
+    <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
   <PropertyGroup Label="Package information">
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/groupdocs/groupdocs-metadata-mcp</PackageProjectUrl>

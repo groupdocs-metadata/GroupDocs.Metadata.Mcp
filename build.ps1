@@ -21,6 +21,41 @@ function Exec {
 
 if (Test-Path .\build_out) { Remove-Item .\build_out -Force -Recurse }
 
+<#
+.SYNOPSIS
+  Verifies that `.mcp/server.json` version fields match the source of truth in
+  `build/dependencies.props`. Fails the build on drift to prevent a release where
+  the NuGet package version and the MCP server manifest disagree.
+#>
+function Assert-ServerJsonVersionMatchesDependencies {
+    param(
+        [Parameter(Mandatory)][string]$DepsPropsPath,
+        [Parameter(Mandatory)][string]$ServerJsonPath,
+        [Parameter(Mandatory)][string]$VersionPropertyName
+    )
+
+    if (-not (Test-Path $DepsPropsPath)) { throw "dependencies.props not found at $DepsPropsPath" }
+    if (-not (Test-Path $ServerJsonPath)) { throw "server.json not found at $ServerJsonPath" }
+
+    [xml]$depsXml = Get-Content $DepsPropsPath
+    $expectedVersion = ($depsXml.SelectSingleNode("//$VersionPropertyName")).InnerText.Trim()
+    if (-not $expectedVersion) { throw "Property <$VersionPropertyName> not found in $DepsPropsPath" }
+
+    $serverJsonText = Get-Content $ServerJsonPath -Raw
+    $pattern = '"version"\s*:\s*"' + [regex]::Escape($expectedVersion) + '"'
+    $matchCount = [regex]::Matches($serverJsonText, $pattern).Count
+
+    if ($matchCount -ne 2) {
+        throw "server.json version mismatch: expected both top-level and packages[0] 'version' = '$expectedVersion' (from <$VersionPropertyName> in $DepsPropsPath). Found $matchCount occurrence(s). Update $ServerJsonPath and try again."
+    }
+    Write-Host "build: server.json version '$expectedVersion' matches dependencies.props"
+}
+
+Assert-ServerJsonVersionMatchesDependencies `
+    -DepsPropsPath ".\build\dependencies.props" `
+    -ServerJsonPath ".\src\GroupDocs.Metadata.Mcp\.mcp\server.json" `
+    -VersionPropertyName "GroupDocsMetadataMcp"
+
 exec { & dotnet restore }
 
 $suffix = $NULL

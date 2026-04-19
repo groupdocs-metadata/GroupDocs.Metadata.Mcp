@@ -19,18 +19,7 @@
           "value": "{storage_path}",
           "variables": {
             "storage_path": {
-              "description": "Base folder for input and output files.",
-              "isRequired": false,
-              "isSecret": false
-            }
-          }
-        },
-        {
-          "name": "GROUPDOCS_MCP_INPUT_PATH",
-          "value": "{input_path}",
-          "variables": {
-            "input_path": {
-              "description": "Folder to read input files from. Defaults to GROUPDOCS_MCP_STORAGE_PATH.",
+              "description": "Base folder for input and output files. Defaults to the current working directory.",
               "isRequired": false,
               "isSecret": false
             }
@@ -41,7 +30,7 @@
           "value": "{output_path}",
           "variables": {
             "output_path": {
-              "description": "Folder to write output files to. Defaults to GROUPDOCS_MCP_STORAGE_PATH.",
+              "description": "Optional — separate folder for output files. Defaults to GROUPDOCS_MCP_STORAGE_PATH.",
               "isRequired": false,
               "isSecret": false
             }

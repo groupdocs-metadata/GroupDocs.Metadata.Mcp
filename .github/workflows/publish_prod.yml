@@ -11,6 +11,10 @@ jobs:
     runs-on: windows-latest
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
+      # Pinned via GitHub repo variable; fallback to 1.3.0 if unset
+      CODE_SIGN_TOOL_VERSION: ${{ vars.CODE_SIGN_TOOL_VERSION || '1.3.0' }}
+    permissions:
+      contents: write         # required to create GitHub Release
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,7 +31,8 @@ jobs:
 
       - name: Download CodeSignTool
         run: |
-          Invoke-WebRequest -Uri https://github.com/SSLcom/CodeSignTool/releases/download/v1.3.0/CodeSignTool-v1.3.0-windows.zip -OutFile codesign.zip
+          $version = $env:CODE_SIGN_TOOL_VERSION
+          Invoke-WebRequest -Uri "https://github.com/SSLcom/CodeSignTool/releases/download/v$version/CodeSignTool-v$version-windows.zip" -OutFile codesign.zip
 
       - name: Unpack CodeSignTool
         run: |
@@ -35,11 +40,13 @@ jobs:
           Expand-Archive -Path codesign.zip -DestinationPath "$env:GITHUB_WORKSPACE\code_sign" -Force
 
       - name: Configure CodeSignTool
+        env:
+          CODE_SIGN_CLIENT_ID: ${{ secrets.CODE_SIGN_CLIENT_ID }}
         run: |
           $confPath = "$env:GITHUB_WORKSPACE\code_sign\conf\code_sign_tool.properties"
           if (Test-Path $confPath) { Remove-Item $confPath -Force }
           $lines = @(
-            'CLIENT_ID=kaXTRACNijSWsFdRKg_KAfD3fqrBlzMbWs6TwWHwAn8'
+            "CLIENT_ID=$env:CODE_SIGN_CLIENT_ID"
             'OAUTH2_ENDPOINT=https://login.ssl.com/oauth2/token'
             'CSC_API_ENDPOINT=https://cs.ssl.com'
             'TSA_URL=http://ts.ssl.com'
@@ -55,7 +62,8 @@ jobs:
       - name: Sign packages with SSL.com eSigner
         working-directory: ${{ github.workspace }}\code_sign
         run: |
-          & ".\jdk-11.0.2\bin\java" -Xmx1024M -jar ".\jar\code_sign_tool-1.3.0.jar" batch_sign `
+          $version = $env:CODE_SIGN_TOOL_VERSION
+          & ".\jdk-11.0.2\bin\java" -Xmx1024M -jar ".\jar\code_sign_tool-$version.jar" batch_sign `
             -username="${{ secrets.ES_USERNAME }}" `
             -password="${{ secrets.ES_PASSWORD }}" `
             -totp_secret="${{ secrets.ES_TOTP_SECRET }}" `
@@ -72,3 +80,62 @@ jobs:
         with:
           name: artifacts
           path: artifacts
+
+      - name: Extract changelog entry for this release
+        id: changelog
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $entry = Get-ChildItem -Path "changelog" -Filter "*.md" |
+            Where-Object { $_.Name -ne "README.md" } |
+            Where-Object { (Get-Content $_.FullName -Raw) -match "version:\s*$([regex]::Escape($tag))\s*$" -or `
+                            (Get-Content $_.FullName -Raw) -match "version:\s*$([regex]::Escape($tag))`r?`n" } |
+            Select-Object -First 1
+          if ($entry) {
+            $body = Get-Content $entry.FullName -Raw
+            # Strip YAML frontmatter
+            $body = [regex]::Replace($body, '(?s)\A---.*?---\s*', '')
+            $bodyFile = "$env:GITHUB_WORKSPACE\release_body.md"
+            Set-Content -Path $bodyFile -Value $body
+            echo "body_path=$bodyFile" >> $env:GITHUB_OUTPUT
+          } else {
+            Write-Host "No changelog entry found for version $tag"
+            echo "body_path=" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: ${{ steps.changelog.outputs.body_path }}
+          files: artifacts/*.nupkg
+          generate_release_notes: true
+          fail_on_unmatched_files: false
+
+  publish_mcp_registry:
+    name: Publish to MCP Registry
+    runs-on: ubuntu-latest
+    needs: publish_prod
+    # Opt-in: set repository variable MCP_REGISTRY_PUBLISH=true to enable.
+    # Requires one-time registry namespace ownership setup — see RELEASE.md.
+    if: vars.MCP_REGISTRY_PUBLISH == 'true'
+    permissions:
+      id-token: write     # for GitHub OIDC authentication
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download mcp-publisher
+        run: |
+          curl -fsSL \
+            -o mcp-publisher.tar.gz \
+            https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz
+          tar -xzf mcp-publisher.tar.gz
+          chmod +x mcp-publisher
+
+      - name: Authenticate with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server.json
+        run: ./mcp-publisher publish src/GroupDocs.Metadata.Mcp/.mcp/server.json
