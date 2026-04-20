@@ -16,7 +16,7 @@ public class RemoveMetadataToolTests
 
     public RemoveMetadataToolTests()
     {
-        _output = new OutputHelper(_storage.Object, Options.Create(new McpConfig()));
+        _output = new OutputHelper(_storage.Object, Microsoft.Extensions.Options.Options.Create(new McpConfig()));
     }
 
     [Fact]

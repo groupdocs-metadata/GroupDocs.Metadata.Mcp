@@ -56,25 +56,21 @@ Assert-ServerJsonVersionMatchesDependencies `
     -ServerJsonPath ".\src\GroupDocs.Metadata.Mcp\.mcp\server.json" `
     -VersionPropertyName "GroupDocsMetadataMcp"
 
-exec { & dotnet restore }
+exec { & dotnet restore src\GroupDocs.Metadata.Mcp.sln }
 
-$suffix = $NULL
-switch -Exact ($env:BUILD_TYPE)
-{
-    "PROD"
-    {
-        $suffix = "prod"; Break
-    }
-    Default {
-        $suffix = "local"; Break
-    }
+$isProd = $env:BUILD_TYPE -eq "PROD"
+
+if ($isProd) {
+    Write-Host "build: PROD build - stable version (no suffix)"
+    exec { & dotnet build src\GroupDocs.Metadata.Mcp.sln -c Release --verbosity quiet --nologo }
+} else {
+    $commitHash = $(git rev-parse --short HEAD)
+    $buildSuffix = "local-$commitHash"
+    Write-Host "build: DEV build - version suffix is $buildSuffix"
+    exec { & dotnet build src\GroupDocs.Metadata.Mcp.sln -c Release --version-suffix=$buildSuffix --verbosity quiet --nologo }
 }
 
-$commitHash = $(git rev-parse --short HEAD)
-$buildSuffix = @{ $true = "$($suffix)-$($commitHash)"; $false = "$($commitHash)" }[$suffix -ne ""]
+$packArgs = @('-c', 'Release', '-o', '.\build_out', '--include-symbols', '-p:SymbolPackageFormat=snupkg', '--no-build')
+if (-not $isProd) { $packArgs += "--version-suffix=$buildSuffix" }
 
-Write-Host "build: Build version suffix is $buildSuffix"
-
-exec { & dotnet build src\GroupDocs.Metadata.Mcp.sln -c Release --version-suffix=$buildSuffix -v q /nologo }
-
-exec { & dotnet pack .\src\GroupDocs.Metadata.Mcp\GroupDocs.Metadata.Mcp.csproj -c Release -o .\build_out --include-symbols -p:SymbolPackageFormat=snupkg --no-build }
+exec { & dotnet pack .\src\GroupDocs.Metadata.Mcp\GroupDocs.Metadata.Mcp.csproj @packArgs }

@@ -12,8 +12,12 @@
     <PackageIcon>images\icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IsPackable>true</IsPackable>
-    <!-- Mark as MCP server for NuGet.org discovery (packagetype=mcpserver filter) -->
-    <PackageTypes>McpServer</PackageTypes>
+    <!-- Package as a .NET tool so the nupkg gets the required tools/ layout
+         for `dnx` / `dotnet tool install` invocation. -->
+    <PackAsTool>true</PackAsTool>
+    <!-- Mark as MCP server for NuGet.org discovery (packagetype=McpServer filter).
+         NOTE: correct MSBuild property is singular <PackageType>; the plural form is ignored. -->
+    <PackageType>McpServer</PackageType>
     <!-- CLI tool name for dnx / dotnet tool install invocation -->
     <ToolCommandName>groupdocs-metadata-mcp</ToolCommandName>
   </PropertyGroup>

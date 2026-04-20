@@ -8,6 +8,9 @@ on:
 
 jobs:
   publish_prod:
+    # Only run when triggered by a version tag (push of a tag, or "Run workflow" with a tag selected).
+    # Branch dispatches (e.g. Run workflow from `main`) are skipped so we never create a bogus tag/release.
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: windows-latest
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -16,6 +19,34 @@ jobs:
     permissions:
       contents: write         # required to create GitHub Release
     steps:
+      - name: Verify required secrets are configured
+        shell: pwsh
+        env:
+          CODE_SIGN_CLIENT_ID: ${{ secrets.CODE_SIGN_CLIENT_ID }}
+          ES_USERNAME:         ${{ secrets.ES_USERNAME }}
+          ES_PASSWORD:         ${{ secrets.ES_PASSWORD }}
+          ES_TOTP_SECRET:      ${{ secrets.ES_TOTP_SECRET }}
+          NUGET_API_KEY_PROD:  ${{ secrets.NUGET_API_KEY_PROD }}
+        run: |
+          $required = @(
+            'CODE_SIGN_CLIENT_ID',
+            'ES_USERNAME',
+            'ES_PASSWORD',
+            'ES_TOTP_SECRET',
+            'NUGET_API_KEY_PROD'
+          )
+          $missing = @()
+          foreach ($name in $required) {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
+              $missing += $name
+            }
+          }
+          if ($missing.Count -gt 0) {
+            Write-Error "Missing required secrets: $($missing -join ', '). Configure under Settings -> Secrets and variables -> Actions."
+            exit 1
+          }
+          Write-Host "All required secrets present."
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -69,6 +100,27 @@ jobs:
             -totp_secret="${{ secrets.ES_TOTP_SECRET }}" `
             -input_dir_path="$env:GITHUB_WORKSPACE/build_out" `
             -output_dir_path="$env:GITHUB_WORKSPACE/artifacts"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "CodeSignTool exited with non-zero code $LASTEXITCODE."
+            exit $LASTEXITCODE
+          }
+
+      - name: Verify all packages were signed
+        shell: pwsh
+        run: |
+          $expected = @(Get-ChildItem "$env:GITHUB_WORKSPACE\build_out" -Filter *.nupkg)
+          $signed   = @(Get-ChildItem "$env:GITHUB_WORKSPACE\artifacts" -Filter *.nupkg)
+          if ($expected.Count -eq 0) {
+            Write-Error "No input .nupkg files found in build_out - build step produced nothing to sign."
+            exit 1
+          }
+          if ($signed.Count -ne $expected.Count) {
+            $expectedNames = ($expected | ForEach-Object { $_.Name }) -join ', '
+            $signedNames   = if ($signed.Count -gt 0) { ($signed | ForEach-Object { $_.Name }) -join ', ' } else { '<none>' }
+            Write-Error "Signing produced $($signed.Count) of $($expected.Count) expected .nupkg files. Expected: $expectedNames. Found signed: $signedNames. CodeSignTool likely failed silently - check the previous step's output."
+            exit 1
+          }
+          Write-Host "Signing verified: $($signed.Count) of $($expected.Count) packages present in artifacts."
 
       - name: Publish to Prod
         env:
@@ -117,9 +169,9 @@ jobs:
     name: Publish to MCP Registry
     runs-on: ubuntu-latest
     needs: publish_prod
-    # Opt-in: set repository variable MCP_REGISTRY_PUBLISH=true to enable.
+    # Only run for tag-triggered releases, AND only when opt-in variable is set.
     # Requires one-time registry namespace ownership setup — see RELEASE.md.
-    if: vars.MCP_REGISTRY_PUBLISH == 'true'
+    if: startsWith(github.ref, 'refs/tags/') && vars.MCP_REGISTRY_PUBLISH == 'true'
     permissions:
       id-token: write     # for GitHub OIDC authentication
       contents: read

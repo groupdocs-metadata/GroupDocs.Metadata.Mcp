@@ -22,11 +22,15 @@ function Exec {
 
 if (-Not (Test-Path .\artifacts)) { throw ("Folder '.\artifacts' does not exist.") }
 
-Get-ChildItem .\artifacts -Filter *.nupkg |
-Foreach-Object {
-    $fileName = $_.Name
-    $package = ".\artifacts\${fileName}"
+$packages = @(Get-ChildItem .\artifacts -Filter *.nupkg)
+if ($packages.Count -eq 0) {
+    throw "No .nupkg files found in .\artifacts - refusing to publish nothing. Check the signing step output."
+}
 
+Write-Host "Found $($packages.Count) package(s) to publish."
+
+foreach ($pkg in $packages) {
+    $package = $pkg.FullName
     Write-Host "Package $package will be published."
 
     exec { & dotnet nuget push $package --api-key "$env:NUGET_API_KEY_PROD" --source https://api.nuget.org/v3/index.json --skip-duplicate }
