@@ -1,6 +1,6 @@
 # Release Process — GroupDocs.Metadata.Mcp
 
-End-to-end checklist for releasing a new version to NuGet.org + ghcr.io + Docker Hub.
+End-to-end checklist for releasing a new version to NuGet.org + ghcr.io + Docker Hub + MCP Registry.
 
 ## Versioning — CalVer `YY.MM.N`
 
@@ -10,119 +10,150 @@ End-to-end checklist for releasing a new version to NuGet.org + ghcr.io + Docker
 
 Example: `26.4.0`, `26.4.1`, `26.5.0`.
 
-## Per-release checklist
+---
 
-### 1. Prepare the changelog entry
+## Day-to-day work (no release)
 
-Add a new file under [changelog/](changelog/):
-
-```
-changelog/NNN-short-slug.md
-```
-
-Use the next sequential `NNN` and follow the frontmatter in [changelog/README.md](changelog/README.md).
-Set `version: {NEW_VERSION}` in the frontmatter.
-
-### 2. Bump the package version in `build/dependencies.props`
-
-```xml
-<GroupDocsMetadataMcp>{NEW_VERSION}</GroupDocsMetadataMcp>
-```
-
-### 3. Bump `.mcp/server.json` (TWO places)
-
-Edit [src/GroupDocs.Metadata.Mcp/.mcp/server.json](src/GroupDocs.Metadata.Mcp/.mcp/server.json) and update **both** version fields:
-
-```json
-{
-  "version": "{NEW_VERSION}",          ← top-level
-  "packages": [
-    {
-      "version": "{NEW_VERSION}",      ← inside packages[0]
-      ...
-    }
-  ]
-}
-```
-
-> `build.ps1` validates that both `server.json` version fields match `<GroupDocsMetadataMcp>` in `dependencies.props`. If they drift, the build fails — this is the safety net.
-
-### 4. (Rarely) bump dependency versions
-
-Only when needed — update the `External Dependency Versions` block in
-[build/dependencies.props](build/dependencies.props):
-
-- `GroupDocsMcpCore` — bump if new infra features are needed
-- `GroupDocsMetadata` — bump to track new GroupDocs.Metadata engine releases
-- `MicrosoftExtensionsHosting` — bump with .NET LTS patches
-- `ModelContextProtocol` — bump with MCP SDK releases
-- `MicrosoftSourceLinkGithub` — rarely
-
-### 5. (Rarely) bump tool versions
-
-- `CodeSignTool` version — GitHub repository variable `CODE_SIGN_TOOL_VERSION`. Bump under **Settings → Secrets and variables → Actions → Variables**.
-
-### 6. Update the pinned version in `README.md`
-
-Search [README.md](README.md) for the old version number and replace every occurrence (`dnx GroupDocs.Metadata.Mcp@...`, Claude Desktop config, VS Code `mcp.json`). Four references typically.
-
-### 7. Verify locally
-
-```powershell
-# This runs the server.json ↔ dependencies.props consistency check
-./build.ps1
-
-# Tests
-dotnet test src/GroupDocs.Metadata.Mcp.sln -c Release
-
-# Docker build sanity check
-docker build -f docker/Dockerfile -t metadata-mcp:test .
-```
-
-### 8. Commit
+Just push to `main`:
 
 ```bash
-git add build/dependencies.props src/GroupDocs.Metadata.Mcp/.mcp/server.json README.md changelog/NNN-*.md
-git commit -m "Release {NEW_VERSION}"
+git add <files>
+git commit -m "…"
 git push
 ```
 
-### 9. Wait for CI green
+`build_packages.yml` and `run_tests.yml` run on every push — `publish_prod.yml` and `publish_docker.yml` do **not**. Commits never create a tag, a NuGet release, a GitHub Release, or a Docker image tag. Changelog edits, code changes, and prop bumps are all free actions — you can commit them whenever without triggering a release.
 
-`build_packages.yml` and `run_tests.yml` must pass on `main`.
+---
 
-### 10. Tag the release
+## Releasing a new version
+
+### 1. Prepare the release commit
+
+All edits below go in **one commit on `main`**:
+
+1. **Bump the package version** in [build/dependencies.props](build/dependencies.props):
+
+   ```xml
+   <GroupDocsMetadataMcp>{NEW_VERSION}</GroupDocsMetadataMcp>
+   ```
+
+2. **Bump both `.mcp/server.json` versions** — [src/GroupDocs.Metadata.Mcp/.mcp/server.json](src/GroupDocs.Metadata.Mcp/.mcp/server.json) has **two** `version` fields that must both match:
+
+   ```json
+   {
+     "version": "{NEW_VERSION}",          ← top-level
+     "packages": [
+       {
+         "version": "{NEW_VERSION}",      ← packages[0].version
+         ...
+       }
+     ]
+   }
+   ```
+
+   > `build.ps1` refuses to build if any of these drift from `dependencies.props`. The release workflow also double-checks at the start and fails fast.
+
+3. **Update pinned versions in `README.md`** — search for the old version and replace every occurrence (`dnx GroupDocs.Metadata.Mcp@…`, Claude Desktop config, VS Code `mcp.json`). Typically 4 places.
+
+4. **Add a changelog entry** — new file `changelog/NNN-short-slug.md` with `version: {NEW_VERSION}` in the frontmatter. Format in [changelog/README.md](changelog/README.md).
+
+5. *(Optional, rare)* Bump external dependency versions in the same props file — `GroupDocsMcpCore`, `GroupDocsMetadata`, `MicrosoftExtensionsHosting`, `ModelContextProtocol`, `MicrosoftSourceLinkGithub`.
+
+6. Commit + push:
+
+   ```bash
+   git add build/dependencies.props src/GroupDocs.Metadata.Mcp/.mcp/server.json README.md changelog/NNN-*.md
+   git commit -m "Release {NEW_VERSION}"
+   git push
+   ```
+
+### 2. Verify locally (optional but recommended)
+
+```powershell
+./build.ps1                                                 # runs server.json ↔ dependencies.props check, packs .nupkg
+dotnet test src/GroupDocs.Metadata.Mcp.sln -c Release       # runs tests
+docker build -f docker/Dockerfile -t metadata-mcp:test .    # Dockerfile sanity check
+```
+
+### 3. Wait for CI green on `main`
+
+`build_packages.yml` + `run_tests.yml` must be green before releasing.
+
+### 4. Trigger the release
+
+Two ways to release — **pick one, not both**.
+
+#### Option A — UI dispatch (no git-CLI required)
+
+The release consists of **two workflows** — `publish_prod` (NuGet) and `publish_docker` (container images). Run both:
+
+1. GitHub → **Actions** → **Publish Prod** → **Run workflow** → leave branch on `main` → enter `{NEW_VERSION}` → Run.
+2. GitHub → **Actions** → **Publish Docker Image** → **Run workflow** → leave branch on `main` → enter `{NEW_VERSION}` → Run.
+
+Both workflows validate the input matches `dependencies.props` (and `.mcp/server.json`), run their respective pipelines, and create the `{NEW_VERSION}` tag + GitHub Release at the end of `publish_prod`. If anything fails — no tag, no release, no Docker image tagged `:latest`.
+
+#### Option B — tag push (fires both workflows automatically)
 
 ```bash
 git tag {NEW_VERSION}
 git push origin {NEW_VERSION}
 ```
 
-**No `v` prefix.** Tag must match `[0-9]+\.[0-9]+\.[0-9]+`.
+The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VERSION}`. Validation still runs.
 
-### 11. CI takes over
+> Tag must be `YY.MM.N` — no `v` prefix, no suffix. Workflows reject anything else.
 
-Two workflows fire in parallel on the tag push:
+### 5. CI takes over (either trigger)
 
-**`publish_prod.yml`** (NuGet):
-1. Builds with `BUILD_TYPE=PROD`
-2. Runs `build.ps1` → validates server.json + dependencies.props, packs .nupkg + .snupkg
-3. Signs with SSL.com eSigner
-4. Pushes to NuGet.org using `NUGET_API_KEY_PROD`
-5. Creates GitHub Release with the changelog entry attached
+**`publish_prod.yml` — NuGet + GitHub Release:**
 
-**`publish_docker.yml`** (container images):
-1. Builds multi-arch image (linux/amd64, linux/arm64)
-2. Pushes to `ghcr.io/groupdocs/metadata-mcp:{NEW_VERSION}` + `:latest`
-3. Pushes to `docker.io/groupdocs/metadata-mcp:{NEW_VERSION}` + `:latest`
+1. **Verify required secrets** (fails in seconds if any missing).
+2. **Resolve + validate version** — confirms input/tag matches `dependencies.props` AND both `server.json` version fields.
+3. Build with `BUILD_TYPE=PROD` (stable version, no `-prod-xxx` suffix).
+4. Pack `.nupkg` + `.snupkg` (includes `.mcp/server.json` and `tools/net10.0/any/` layout).
+5. Sign `.nupkg` with SSL.com eSigner. Signing failures detected via exit code **and** file count.
+6. Push to NuGet.org using `NUGET_API_KEY_PROD`.
+7. Create the GitHub Release (+ tag if needed) with changelog body + `.nupkg` attached.
 
-### 12. Post-release verification
+**`publish_docker.yml` — container images:**
 
-- [ ] NuGet: package listed at new version, signed badge visible, "MCP Server" tab shows generated `mcp.json`
-- [ ] GitHub Release created with artifacts + changelog body
+1. **Verify Docker Hub secrets** (fails early if missing).
+2. **Resolve + validate version** — confirms matches `dependencies.props`.
+3. Build multi-arch image (`linux/amd64`, `linux/arm64`).
+4. Push `ghcr.io/groupdocs/metadata-mcp:{NEW_VERSION}` + `:latest`.
+5. Push `docker.io/groupdocs/metadata-mcp:{NEW_VERSION}` + `:latest`.
+
+**`publish_prod.yml → publish_mcp_registry` job** (opt-in — only if `MCP_REGISTRY_PUBLISH=true`):
+
+1. Runs after `publish_prod` succeeds.
+2. Uses GitHub OIDC to authenticate with the MCP Registry.
+3. Publishes `src/GroupDocs.Metadata.Mcp/.mcp/server.json` to `https://registry.modelcontextprotocol.io`.
+
+### 6. Post-release verification
+
+- [ ] **NuGet**: package listed at new version, signed-badge visible, "MCP Server" tab on the package page shows the generated `mcp.json`
+- [ ] **GitHub Release** created with nupkg assets + changelog body
 - [ ] `ghcr.io/groupdocs/metadata-mcp:{NEW_VERSION}` pullable
 - [ ] `docker.io/groupdocs/metadata-mcp:{NEW_VERSION}` pullable
-- [ ] Smoke test `dnx GroupDocs.Metadata.Mcp@{NEW_VERSION} --yes` from a clean machine
+- [ ] Smoke test from a clean machine: `dnx GroupDocs.Metadata.Mcp@{NEW_VERSION} --yes`
+- [ ] *(If registry enabled)* server listed at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs/groupdocs-metadata-mcp`
+
+### 7. Re-running a failed release
+
+- **Via UI**: Actions → pick the failed run → **Re-run all jobs**. Or start a fresh Run workflow with the same version input — `dotnet nuget push --skip-duplicate` and `docker push` of an identical image are idempotent.
+- **Via tag**: if the tag was never created (i.e. the failure happened before the Create GitHub Release step), re-push:
+
+  ```bash
+  git push origin :refs/tags/{VERSION}    # delete from remote if it got created
+  git tag -d {VERSION}                    # delete locally
+  git tag {VERSION}                       # re-tag HEAD
+  git push origin {VERSION}               # fires both workflows again
+  ```
+
+  **Do not re-push a tag that already has a successful release pointing at it** — that rewrites history for downstream consumers.
+
+---
 
 ## Required GitHub secrets & variables
 
@@ -143,9 +174,13 @@ Two workflows fire in parallel on the tag push:
 | Variable | Default | Purpose |
 |---|---|---|
 | `CODE_SIGN_TOOL_VERSION` | `1.3.0` | CodeSignTool release tag from github.com/SSLcom/CodeSignTool |
-| `MCP_REGISTRY_PUBLISH` | *(unset)* | Set to `true` to enable the MCP Registry publish step. Requires one-time namespace setup with the MCP Registry (`io.github.groupdocs/*`). |
+| `MCP_REGISTRY_PUBLISH` | *(unset)* | Set to `true` to enable the MCP Registry publish step after one-time namespace setup |
 
 > `GITHUB_TOKEN` is provisioned automatically — no setup needed for ghcr.io pushes or MCP Registry OIDC auth.
+
+Both `publish_prod.yml` and `publish_docker.yml` have a secrets precheck as their first step — they fail in seconds if any required secret is missing, before burning CI minutes on builds.
+
+---
 
 ## One-time MCP Registry setup
 
@@ -154,13 +189,18 @@ Before enabling `MCP_REGISTRY_PUBLISH=true`:
 1. Verify namespace ownership with the MCP Registry — either:
    - **GitHub OIDC** (recommended): publish from a repo inside `github.com/groupdocs/*` — the Registry auto-verifies the `io.github.groupdocs/*` namespace via OIDC claims.
    - **DNS**: add a TXT record to `groupdocs.io` per the Registry's DNS verification docs.
-2. Test the first publish with a release candidate tag; confirm the server appears at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs/groupdocs-metadata-mcp`.
-3. Flip `MCP_REGISTRY_PUBLISH` to `true` for subsequent auto-publishing on every tag.
+2. Test the first publish with a pre-release tag; confirm the server appears at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs/groupdocs-metadata-mcp`.
+3. Flip `MCP_REGISTRY_PUBLISH` to `true` for subsequent auto-publishing on every release.
+
+---
 
 ## Yanking a bad release
 
-1. NuGet.org: unlist (don't delete) the bad package
-2. ghcr.io / Docker Hub: delete the affected tag (but keep `:latest` pointing at the previous good release)
-3. Bump `N` in `dependencies.props` + `.mcp/server.json`
-4. Add a `type: fix` changelog entry
-5. Tag and release the patch
+Never re-upload the same version — NuGet.org rejects replays, and the MCP Registry treats server.json versions as immutable.
+
+1. **NuGet.org**: unlist (don't delete) the bad package.
+2. **ghcr.io / Docker Hub**: delete the affected tag. Keep `:latest` pointing at the previous good release.
+3. **MCP Registry**: submit a deprecation request via the registry's issue tracker if you need to mark the bad version withdrawn.
+4. Bump `N` in `dependencies.props` + `.mcp/server.json` (e.g. `26.4.0` → `26.4.1`).
+5. Add a `type: fix` changelog entry.
+6. Commit + push + release the patch using the normal flow above.
