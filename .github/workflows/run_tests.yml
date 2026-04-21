@@ -3,7 +3,7 @@ name: Run Tests
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - 'src/**'
       - '**/*.csproj'
@@ -11,7 +11,7 @@ on:
       - 'build/**'
   pull_request:
     branches:
-      - main
+      - master
     paths:
       - 'src/**'
       - '**/*.csproj'

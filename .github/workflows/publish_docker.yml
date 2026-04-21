@@ -43,8 +43,8 @@ jobs:
         id: images
         run: |
           OWNER="${{ github.repository_owner }}"
-          echo "ghcr=ghcr.io/${OWNER,,}/metadata-mcp" >> $GITHUB_OUTPUT
-          echo "dockerhub=groupdocs/metadata-mcp" >> $GITHUB_OUTPUT
+          echo "ghcr=ghcr.io/${OWNER,,}/metadata-net-mcp" >> $GITHUB_OUTPUT
+          echo "dockerhub=groupdocs/metadata-net-mcp" >> $GITHUB_OUTPUT
 
       - name: Resolve and validate version
         id: version

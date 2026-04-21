@@ -73,7 +73,7 @@ All edits below go in **one commit on `main`**:
 ```powershell
 ./build.ps1                                                 # runs server.json ↔ dependencies.props check, packs .nupkg
 dotnet test src/GroupDocs.Metadata.Mcp.sln -c Release       # runs tests
-docker build -f docker/Dockerfile -t metadata-mcp:test .    # Dockerfile sanity check
+docker build -f docker/Dockerfile -t metadata-net-mcp:test .    # Dockerfile sanity check
 ```
 
 ### 3. Wait for CI green on `main`
@@ -121,8 +121,8 @@ The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VE
 1. **Verify Docker Hub secrets** (fails early if missing).
 2. **Resolve + validate version** — confirms matches `dependencies.props`.
 3. Build multi-arch image (`linux/amd64`, `linux/arm64`).
-4. Push `ghcr.io/groupdocs/metadata-mcp:{NEW_VERSION}` + `:latest`.
-5. Push `docker.io/groupdocs/metadata-mcp:{NEW_VERSION}` + `:latest`.
+4. Push `ghcr.io/groupdocs-metadata/metadata-net-mcp:{NEW_VERSION}` + `:latest`.
+5. Push `docker.io/groupdocs/metadata-net-mcp:{NEW_VERSION}` + `:latest`.
 
 **`publish_prod.yml → publish_mcp_registry` job** (opt-in — only if `MCP_REGISTRY_PUBLISH=true`):
 
@@ -134,10 +134,10 @@ The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VE
 
 - [ ] **NuGet**: package listed at new version, signed-badge visible, "MCP Server" tab on the package page shows the generated `mcp.json`
 - [ ] **GitHub Release** created with nupkg assets + changelog body
-- [ ] `ghcr.io/groupdocs/metadata-mcp:{NEW_VERSION}` pullable
-- [ ] `docker.io/groupdocs/metadata-mcp:{NEW_VERSION}` pullable
+- [ ] `ghcr.io/groupdocs-metadata/metadata-net-mcp:{NEW_VERSION}` pullable
+- [ ] `docker.io/groupdocs/metadata-net-mcp:{NEW_VERSION}` pullable
 - [ ] Smoke test from a clean machine: `dnx GroupDocs.Metadata.Mcp@{NEW_VERSION} --yes`
-- [ ] *(If registry enabled)* server listed at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs/groupdocs-metadata-mcp`
+- [ ] *(If registry enabled)* server listed at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs-metadata/groupdocs-metadata-mcp`
 
 ### 7. Re-running a failed release
 
@@ -167,7 +167,7 @@ The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VE
 | `ES_TOTP_SECRET` | SSL.com eSigner TOTP 2FA secret |
 | `CODE_SIGN_CLIENT_ID` | SSL.com eSigner OAuth CLIENT_ID |
 | `DOCKERHUB_USERNAME` | Docker Hub username for `groupdocs` org |
-| `DOCKERHUB_TOKEN` | Docker Hub access token scoped to `groupdocs/metadata-mcp` |
+| `DOCKERHUB_TOKEN` | Docker Hub access token scoped to `groupdocs/metadata-net-mcp` |
 
 **Variables** (`Settings → Secrets and variables → Actions → Variables`):
 
@@ -187,9 +187,9 @@ Both `publish_prod.yml` and `publish_docker.yml` have a secrets precheck as thei
 Before enabling `MCP_REGISTRY_PUBLISH=true`:
 
 1. Verify namespace ownership with the MCP Registry — either:
-   - **GitHub OIDC** (recommended): publish from a repo inside `github.com/groupdocs/*` — the Registry auto-verifies the `io.github.groupdocs/*` namespace via OIDC claims.
+   - **GitHub OIDC** (recommended): publish from a repo inside `github.com/groupdocs-metadata/*` — the Registry auto-verifies the `io.github.groupdocs-metadata/*` namespace via OIDC claims.
    - **DNS**: add a TXT record to `groupdocs.io` per the Registry's DNS verification docs.
-2. Test the first publish with a pre-release tag; confirm the server appears at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs/groupdocs-metadata-mcp`.
+2. Test the first publish with a pre-release tag; confirm the server appears at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs-metadata/groupdocs-metadata-mcp`.
 3. Flip `MCP_REGISTRY_PUBLISH` to `true` for subsequent auto-publishing on every release.
 
 ---

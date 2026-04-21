@@ -1,6 +1,6 @@
 services:
   groupdocs-metadata-mcp:
-    image: ghcr.io/groupdocs/metadata-mcp:latest
+    image: ghcr.io/groupdocs-metadata/metadata-net-mcp:latest
     build:
       context: ..
       dockerfile: docker/Dockerfile

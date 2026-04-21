@@ -12,8 +12,8 @@
 
   <PropertyGroup Label="Package information">
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/groupdocs/groupdocs-metadata-mcp</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/groupdocs/groupdocs-metadata-mcp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Authors>GroupDocs Contributors</Authors>
     <Company>Aspose</Company>
@@ -24,11 +24,11 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions">
-    <GroupDocsMetadataMcp>26.4.0</GroupDocsMetadataMcp>
+    <GroupDocsMetadataMcp>26.4.1</GroupDocsMetadataMcp>
   </PropertyGroup>
 
   <PropertyGroup Label="External Dependency Versions">
-    <GroupDocsMcpCore>26.4.0</GroupDocsMcpCore>
+    <GroupDocsMcpCore>26.4.1</GroupDocsMcpCore>
     <GroupDocsMetadata>26.1.0</GroupDocsMetadata>
     <MicrosoftExtensionsHosting>10.0.5</MicrosoftExtensionsHosting>
     <ModelContextProtocol>1.1.0</ModelContextProtocol>
@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet Common Settings">
-    <PackageReleaseNotes>https://github.com/groupdocs/groupdocs-metadata-mcp/releases/tag/$(GroupDocsMetadataMcp)</PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp/releases/tag/$(GroupDocsMetadataMcp)</PackageReleaseNotes>
   </PropertyGroup>
 
 </Project>

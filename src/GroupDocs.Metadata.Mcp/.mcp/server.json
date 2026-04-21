@@ -1,14 +1,14 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
   "description": "MCP server exposing GroupDocs.Metadata for .NET — read, write, and remove metadata properties from documents, images, and media files via AI agents.",
-  "name": "io.github.groupdocs/groupdocs-metadata-mcp",
-  "version": "26.4.0",
+  "name": "io.github.groupdocs-metadata/groupdocs-metadata-mcp",
+  "version": "26.4.1",
   "packages": [
     {
       "registryType": "nuget",
       "registryBaseUrl": "https://api.nuget.org",
       "identifier": "GroupDocs.Metadata.Mcp",
-      "version": "26.4.0",
+      "version": "26.4.1",
       "transport": {
         "type": "stdio"
       },
@@ -51,7 +51,7 @@
     }
   ],
   "repository": {
-    "url": "https://github.com/groupdocs/groupdocs-metadata-mcp",
+    "url": "https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp",
     "source": "github"
   }
 }

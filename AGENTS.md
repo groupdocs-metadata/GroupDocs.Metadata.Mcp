@@ -6,7 +6,7 @@ Brief orientation for AI coding agents (Claude Code, Copilot, Cursor, Aider, Amp
 
 A standalone **MCP server** for [GroupDocs.Metadata for .NET](https://products.groupdocs.com/metadata) — exposes document metadata operations as AI-callable tools via the Model Context Protocol.
 
-Published to NuGet as `GroupDocs.Metadata.Mcp` with the `McpServer` package type, and to `ghcr.io/groupdocs/metadata-mcp` + `docker.io/groupdocs/metadata-mcp` as a container image.
+Published to NuGet as `GroupDocs.Metadata.Mcp` with the `McpServer` package type, and to `ghcr.io/groupdocs-metadata/metadata-net-mcp` + `docker.io/groupdocs/metadata-net-mcp` as a container image.
 
 ## MCP tools exposed
 
@@ -44,7 +44,7 @@ docker/
 
 ## Dependencies
 
-- `GroupDocs.Mcp.Core` + `GroupDocs.Mcp.Local.Storage` — infrastructure NuGet packages from the [groupdocs-mcp-core](https://github.com/groupdocs/groupdocs-mcp-core) repo
+- `GroupDocs.Mcp.Core` + `GroupDocs.Mcp.Local.Storage` — infrastructure NuGet packages from the [GroupDocs.Mcp.Core](https://github.com/groupdocs/GroupDocs.Mcp.Core/actions) repo
 - `GroupDocs.Metadata` — the actual metadata engine
 - `ModelContextProtocol` — MCP SDK for .NET
 - `Microsoft.Extensions.Hosting` — host builder for the stdio server
@@ -66,8 +66,8 @@ dotnet run --project src/GroupDocs.Metadata.Mcp
 pwsh ./build.ps1
 
 # Build + run the Docker image
-docker build -f docker/Dockerfile -t metadata-mcp:local .
-docker run --rm -i -v $(pwd)/documents:/data metadata-mcp:local
+docker build -f docker/Dockerfile -t metadata-net-mcp:local .
+docker run --rm -i -v $(pwd)/documents:/data metadata-net-mcp:local
 ```
 
 ## Version scheme

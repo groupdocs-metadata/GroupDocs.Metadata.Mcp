@@ -13,7 +13,7 @@ type: feature
   - `ReadMetadata` — extracts all metadata properties (author, title, creation date, custom properties, EXIF, XMP, IPTC) and returns grouped JSON.
   - `RemoveMetadata` — strips all metadata from a document and writes a clean copy to storage.
 - Installable via `dnx GroupDocs.Metadata.Mcp@26.4.0 --yes` (.NET 10 SDK required) or `dotnet tool install -g`.
-- Docker image published to `ghcr.io/groupdocs/metadata-mcp` and `docker.io/groupdocs/metadata-mcp`.
+- Docker image published to `ghcr.io/groupdocs-metadata/metadata-net-mcp` and `docker.io/groupdocs/metadata-net-mcp`.
 - Environment variables: `GROUPDOCS_MCP_STORAGE_PATH`, optional `GROUPDOCS_MCP_OUTPUT_PATH`, `GROUPDOCS_LICENSE_PATH`.
 
 ## Why
