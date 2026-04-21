@@ -44,7 +44,7 @@ docker/
 
 ## Dependencies
 
-- `GroupDocs.Mcp.Core` + `GroupDocs.Mcp.Local.Storage` — infrastructure NuGet packages from the [GroupDocs.Mcp.Core](https://github.com/groupdocs/GroupDocs.Mcp.Core/actions) repo
+- `GroupDocs.Mcp.Core` + `GroupDocs.Mcp.Local.Storage` — infrastructure NuGet packages from the [GroupDocs.Mcp.Core](https://github.com/groupdocs/GroupDocs.Mcp.Core) repo
 - `GroupDocs.Metadata` — the actual metadata engine
 - `ModelContextProtocol` — MCP SDK for .NET
 - `Microsoft.Extensions.Hosting` — host builder for the stdio server
@@ -81,7 +81,7 @@ CalVer `YY.MM.N`. The version lives in **two** places that MUST stay in lockstep
 ## House rules
 
 1. **Tools must have rich `[Description("...")]` strings** — these are what AI agents read via the MCP protocol. Write them as task-oriented sentences, not method-signature summaries.
-2. **Never add new env vars beyond** `GROUPDOCS_MCP_STORAGE_PATH`, `GROUPDOCS_MCP_OUTPUT_PATH`, `GROUPDOCS_LICENSE_PATH` without updating `server.json`, `docker-compose.yml`, `README.md`, and [spec 04](../../groupdocs-mcp-framework/specifications/04-github-repo-deployment-of-gd-product.md) together.
+2. **Never add new env vars beyond** `GROUPDOCS_MCP_STORAGE_PATH`, `GROUPDOCS_MCP_OUTPUT_PATH`, `GROUPDOCS_LICENSE_PATH` without updating `server.json`, `docker-compose.yml`, and `README.md` together.
 3. **Tests use xUnit + Moq** — mock `IFileResolver`, `IFileStorage`, `ILicenseManager`, `OutputHelper`.
 4. **Changelog entries required** — any PR that changes behaviour adds `changelog/NNN-slug.md`.
 5. **Do not edit `obj/` or `build_out/`** — build artifacts.
