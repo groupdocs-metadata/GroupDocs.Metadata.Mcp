@@ -1,6 +1,6 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-10-17/server.schema.json",
-  "description": "MCP server exposing GroupDocs.Metadata for .NET — read, write, and remove metadata properties from documents, images, and media files via AI agents.",
+  "description": "MCP server for GroupDocs.Metadata — read and remove document metadata via AI agents.",
   "name": "io.github.groupdocs-metadata/groupdocs-metadata-mcp",
   "version": "26.4.1",
   "packages": [
