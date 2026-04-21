@@ -39,12 +39,15 @@ jobs:
           SCHEMA_URL=$(jq -r '."$schema"' src/GroupDocs.Metadata.Mcp/.mcp/server.json)
           echo "Fetching schema from $SCHEMA_URL"
           curl -fsSL -o server.schema.json "$SCHEMA_URL"
+          # MCP schema $refs the draft-07 meta-schema; preload it so ajv can resolve the ref.
+          curl -fsSL -o draft-07.schema.json https://json-schema.org/draft-07/schema
 
       - name: Validate server.json
         run: |
           ajv validate \
             --spec=draft2020 \
             -c ajv-formats \
+            -r draft-07.schema.json \
             -s server.schema.json \
             -d src/GroupDocs.Metadata.Mcp/.mcp/server.json \
             --all-errors
