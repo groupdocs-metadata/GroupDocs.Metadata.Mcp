@@ -4,7 +4,7 @@ MCP server that exposes GroupDocs.Metadata for .NET — read, write, and remove 
 
 ## Install
 
-- With dnx (.NET 10 SDK, no install step): `dnx GroupDocs.Metadata.Mcp@26.4.1 --yes`
+- With dnx (.NET 10 SDK, no install step): `dnx GroupDocs.Metadata.Mcp@26.4.2 --yes`
 - As a global dotnet tool: `dotnet tool install -g GroupDocs.Metadata.Mcp` then run `groupdocs-metadata-mcp`
 - As a Docker container: `docker run --rm -i -v $(pwd)/documents:/data ghcr.io/groupdocs-metadata/metadata-net-mcp:latest`
 

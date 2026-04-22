@@ -10,7 +10,7 @@ Requires [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 **Run directly with `dnx` (recommended — no install step):**
 
 ```bash
-dnx GroupDocs.Metadata.Mcp@26.4.1 --yes
+dnx GroupDocs.Metadata.Mcp@26.4.2 --yes
 ```
 
 **Or install as a global dotnet tool:**
@@ -51,7 +51,7 @@ docker run --rm -i \
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.1", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp@26.4.2", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "/path/to/documents"
       }
@@ -81,7 +81,7 @@ Alternatively, add manually to `.vscode/mcp.json`:
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.1", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp@26.4.2", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "${input:storage_path}"
       }
