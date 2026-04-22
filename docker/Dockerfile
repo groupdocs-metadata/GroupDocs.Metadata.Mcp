@@ -13,7 +13,7 @@ COPY --from=build /app .
 ENV GROUPDOCS_MCP_STORAGE_PATH=/data
 VOLUME /data
 
-RUN adduser --disabled-password --gecos "" mcpuser
+RUN useradd --create-home --uid 1000 mcpuser
 USER mcpuser
 
 ENTRYPOINT ["dotnet", "GroupDocs.Metadata.Mcp.dll"]
