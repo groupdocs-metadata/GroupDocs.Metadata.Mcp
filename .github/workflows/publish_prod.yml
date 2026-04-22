@@ -241,5 +241,24 @@ jobs:
       - name: Authenticate with GitHub OIDC
         run: ./mcp-publisher login github-oidc
 
+      - name: Wait for NuGet.org to index the new version
+        # MCP Registry's NuGet ownership check queries api.nuget.org's V3 flat-container index.
+        # That index lags `dotnet nuget push` by 1–10 min (malware scan + signature validation
+        # + CDN propagation). Poll until the version is visible, up to 10 min, then give up.
+        run: |
+          VERSION=$(jq -r '.version' src/GroupDocs.Metadata.Mcp/.mcp/server.json)
+          echo "Waiting for NuGet.org V3 index to list GroupDocs.Metadata.Mcp $VERSION..."
+          for attempt in $(seq 1 20); do
+            if curl -fsSL "https://api.nuget.org/v3-flatcontainer/groupdocs.metadata.mcp/index.json" \
+                 | jq -e --arg v "$VERSION" '.versions | index($v)' > /dev/null; then
+              echo "Indexed after $attempt attempt(s)."
+              exit 0
+            fi
+            echo "Attempt $attempt/20: not indexed yet, sleeping 30s..."
+            sleep 30
+          done
+          echo "::error::NuGet.org did not index $VERSION within 10 minutes. Re-run this job later."
+          exit 1
+
       - name: Publish server.json
         run: ./mcp-publisher publish src/GroupDocs.Metadata.Mcp/.mcp/server.json
