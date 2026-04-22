@@ -14,7 +14,7 @@ Example: `26.4.0`, `26.4.1`, `26.5.0`.
 
 ## Day-to-day work (no release)
 
-Just push to `main`:
+Just push to `master`:
 
 ```bash
 git add <files>
@@ -30,7 +30,7 @@ git push
 
 ### 1. Prepare the release commit
 
-All edits below go in **one commit on `main`**:
+All edits below go in **one commit on `master`**:
 
 1. **Bump the package version** in [build/dependencies.props](build/dependencies.props):
 
@@ -76,7 +76,7 @@ dotnet test src/GroupDocs.Metadata.Mcp.sln -c Release       # runs tests
 docker build -f docker/Dockerfile -t metadata-net-mcp:test .    # Dockerfile sanity check
 ```
 
-### 3. Wait for CI green on `main`
+### 3. Wait for CI green on `master`
 
 `build_packages.yml` + `run_tests.yml` must be green before releasing.
 
@@ -88,8 +88,8 @@ Two ways to release — **pick one, not both**.
 
 The release consists of **two workflows** — `publish_prod` (NuGet) and `publish_docker` (container images). Run both:
 
-1. GitHub → **Actions** → **Publish Prod** → **Run workflow** → leave branch on `main` → enter `{NEW_VERSION}` → Run.
-2. GitHub → **Actions** → **Publish Docker Image** → **Run workflow** → leave branch on `main` → enter `{NEW_VERSION}` → Run.
+1. GitHub → **Actions** → **Publish Prod** → **Run workflow** → leave branch on `master` → enter `{NEW_VERSION}` → Run.
+2. GitHub → **Actions** → **Publish Docker Image** → **Run workflow** → leave branch on `master` → enter `{NEW_VERSION}` → Run.
 
 Both workflows validate the input matches `dependencies.props` (and `.mcp/server.json`), run their respective pipelines, and create the `{NEW_VERSION}` tag + GitHub Release at the end of `publish_prod`. If anything fails — no tag, no release, no Docker image tagged `:latest`.
 
@@ -124,10 +124,10 @@ The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VE
 4. Push `ghcr.io/groupdocs-metadata/metadata-net-mcp:{NEW_VERSION}` + `:latest`.
 5. Push `docker.io/groupdocs/metadata-net-mcp:{NEW_VERSION}` + `:latest`.
 
-**`publish_prod.yml → publish_mcp_registry` job** (opt-in — only if `MCP_REGISTRY_PUBLISH=true`):
+**`publish_prod.yml → publish_mcp_registry` job** (runs on every release):
 
 1. Runs after `publish_prod` succeeds.
-2. Uses GitHub OIDC to authenticate with the MCP Registry.
+2. Uses GitHub OIDC to authenticate with the MCP Registry — namespace `io.github.groupdocs-metadata/*` is auto-verified because the repo lives under `github.com/groupdocs-metadata/*`.
 3. Publishes `src/GroupDocs.Metadata.Mcp/.mcp/server.json` to `https://registry.modelcontextprotocol.io`.
 
 ### 6. Post-release verification
@@ -137,7 +137,7 @@ The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VE
 - [ ] `ghcr.io/groupdocs-metadata/metadata-net-mcp:{NEW_VERSION}` pullable
 - [ ] `docker.io/groupdocs/metadata-net-mcp:{NEW_VERSION}` pullable
 - [ ] Smoke test from a clean machine: `dnx GroupDocs.Metadata.Mcp@{NEW_VERSION} --yes`
-- [ ] *(If registry enabled)* server listed at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs-metadata/groupdocs-metadata-mcp`
+- [ ] MCP Registry: server listed at `https://registry.modelcontextprotocol.io/v0/servers/io.github.groupdocs-metadata%2Fgroupdocs-metadata-mcp`
 
 ### 7. Re-running a failed release
 
@@ -174,7 +174,6 @@ The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VE
 | Variable | Default | Purpose |
 |---|---|---|
 | `CODE_SIGN_TOOL_VERSION` | `1.3.0` | CodeSignTool release tag from github.com/SSLcom/CodeSignTool |
-| `MCP_REGISTRY_PUBLISH` | *(unset)* | Set to `true` to enable the MCP Registry publish step after one-time namespace setup |
 
 > `GITHUB_TOKEN` is provisioned automatically — no setup needed for ghcr.io pushes or MCP Registry OIDC auth.
 
@@ -182,15 +181,11 @@ Both `publish_prod.yml` and `publish_docker.yml` have a secrets precheck as thei
 
 ---
 
-## One-time MCP Registry setup
+## MCP Registry namespace verification
 
-Before enabling `MCP_REGISTRY_PUBLISH=true`:
+The `publish_mcp_registry` job authenticates via GitHub OIDC. The Registry auto-verifies the `io.github.groupdocs-metadata/*` namespace because the workflow runs inside `github.com/groupdocs-metadata/*` — no DNS records, no manual tokens, no opt-in variable required. First-time publish claims the namespace automatically; subsequent releases update it.
 
-1. Verify namespace ownership with the MCP Registry — either:
-   - **GitHub OIDC** (recommended): publish from a repo inside `github.com/groupdocs-metadata/*` — the Registry auto-verifies the `io.github.groupdocs-metadata/*` namespace via OIDC claims.
-   - **DNS**: add a TXT record to `groupdocs.io` per the Registry's DNS verification docs.
-2. Test the first publish with a pre-release tag; confirm the server appears at `https://registry.modelcontextprotocol.io/servers?name=io.github.groupdocs-metadata/groupdocs-metadata-mcp`.
-3. Flip `MCP_REGISTRY_PUBLISH` to `true` for subsequent auto-publishing on every release.
+If you ever fork the repo to a different org (e.g. `github.com/someone-else/*`), the Registry publish will fail until either the `server.json` `name` field is updated to match the new org's namespace or DNS verification is added — but for the canonical `groupdocs-metadata` org, it just works.
 
 ---
 
