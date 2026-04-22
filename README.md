@@ -10,7 +10,7 @@ Requires [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 **Run directly with `dnx` (recommended — no install step):**
 
 ```bash
-dnx GroupDocs.Metadata.Mcp@26.4.2 --yes
+dnx GroupDocs.Metadata.Mcp@26.4.3 --yes
 ```
 
 **Or install as a global dotnet tool:**
@@ -51,7 +51,7 @@ docker run --rm -i \
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.2", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp@26.4.3", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "/path/to/documents"
       }
@@ -81,7 +81,7 @@ Alternatively, add manually to `.vscode/mcp.json`:
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.2", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp@26.4.3", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "${input:storage_path}"
       }
@@ -102,3 +102,5 @@ Edit `docker/docker-compose.yml` to point volumes at your local documents folder
 ## License
 
 MIT — see [LICENSE](LICENSE)
+
+<!-- mcp-name: io.github.groupdocs-metadata/groupdocs-metadata-mcp -->
