@@ -140,18 +140,31 @@ jobs:
           Move-Item "$env:GITHUB_WORKSPACE\build_out\*" "$env:GITHUB_WORKSPACE\artifacts" -Exclude *.nupkg -Force
 
       - name: Sign packages with SSL.com eSigner
+        # Per-file signing with a 3-minute delay before each call. SSL.com eSigner
+        # throttles rapid successive TOTP-authenticated sign operations; batching or
+        # back-to-back signs intermittently fail, so we space them out deterministically.
         working-directory: ${{ github.workspace }}\code_sign
         run: |
           $version = $env:CODE_SIGN_TOOL_VERSION
-          & ".\jdk-11.0.2\bin\java" -Xmx1024M -jar ".\jar\code_sign_tool-$version.jar" batch_sign `
-            -username="${{ secrets.ES_USERNAME }}" `
-            -password="${{ secrets.ES_PASSWORD }}" `
-            -totp_secret="${{ secrets.ES_TOTP_SECRET }}" `
-            -input_dir_path="$env:GITHUB_WORKSPACE/build_out" `
-            -output_dir_path="$env:GITHUB_WORKSPACE/artifacts"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "CodeSignTool exited with non-zero code $LASTEXITCODE."
-            exit $LASTEXITCODE
+          $files = @(Get-ChildItem "$env:GITHUB_WORKSPACE\build_out" -Filter *.nupkg)
+          if ($files.Count -eq 0) {
+            Write-Error "No .nupkg files found in build_out to sign."
+            exit 1
+          }
+          foreach ($file in $files) {
+            Write-Host "Waiting 3 minutes before signing $($file.Name) (SSL.com throttling workaround)..."
+            Start-Sleep -Seconds 180
+            Write-Host "Signing $($file.Name)..."
+            & ".\jdk-11.0.2\bin\java" -Xmx1024M -jar ".\jar\code_sign_tool-$version.jar" sign `
+              -username="${{ secrets.ES_USERNAME }}" `
+              -password="${{ secrets.ES_PASSWORD }}" `
+              -totp_secret="${{ secrets.ES_TOTP_SECRET }}" `
+              -input_file_path="$($file.FullName)" `
+              -output_dir_path="$env:GITHUB_WORKSPACE/artifacts"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "CodeSignTool failed signing $($file.Name) (exit $LASTEXITCODE)."
+              exit $LASTEXITCODE
+            }
           }
 
       - name: Verify all packages were signed
