@@ -10,6 +10,13 @@ Requires [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 **Run directly with `dnx` (recommended — no install step):**
 
 ```bash
+dnx GroupDocs.Metadata.Mcp --yes
+```
+
+Pulls the latest stable release on every invocation. To pin to a specific
+version (recommended for shared configs and CI), append `@<version>`:
+
+```bash
 dnx GroupDocs.Metadata.Mcp@26.4.4 --yes
 ```
 
@@ -51,7 +58,7 @@ docker run --rm -i \
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.4", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "/path/to/documents"
       }
@@ -59,6 +66,10 @@ docker run --rm -i \
   }
 }
 ```
+
+> To pin to a specific version, replace `"GroupDocs.Metadata.Mcp"` with
+> `"GroupDocs.Metadata.Mcp@26.4.4"` in `args`. Pinning is recommended for
+> shared / committed configs to avoid surprise upgrades.
 
 ## Usage with VS Code / GitHub Copilot
 
@@ -81,7 +92,7 @@ Alternatively, add manually to `.vscode/mcp.json`:
     "groupdocs-metadata": {
       "type": "stdio",
       "command": "dnx",
-      "args": ["GroupDocs.Metadata.Mcp@26.4.4", "--yes"],
+      "args": ["GroupDocs.Metadata.Mcp", "--yes"],
       "env": {
         "GROUPDOCS_MCP_STORAGE_PATH": "${input:storage_path}"
       }
@@ -89,6 +100,9 @@ Alternatively, add manually to `.vscode/mcp.json`:
   }
 }
 ```
+
+> Same pinning rule as above — swap `"GroupDocs.Metadata.Mcp"` for
+> `"GroupDocs.Metadata.Mcp@26.4.4"` to lock to a specific release.
 
 ## Usage with Docker Compose
 
@@ -98,6 +112,23 @@ docker compose up
 ```
 
 Edit `docker/docker-compose.yml` to point volumes at your local documents folder.
+
+## Documentation & guides
+
+Step-by-step deployment guides and a published-package integration test suite
+live in the companion repo
+[**GroupDocs.Metadata.Mcp.Tests**](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests):
+
+- [Install from NuGet](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/01-install-from-nuget.md) — `dnx`, global tool, pinned vs always-latest
+- [Run via Docker](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/02-run-via-docker.md)
+- [Verify on the MCP registry](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/03-verify-mcp-registry.md)
+- [Use with Claude Desktop](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/04-use-with-claude-desktop.md)
+- [Use with VS Code / GitHub Copilot](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/05-use-with-vscode-copilot.md)
+- [Run the integration tests](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/06-run-integration-tests.md)
+
+That repo also exercises every advertised tool against the **published** NuGet
+artifact on Linux, macOS, and Windows in CI — so the snippets above are
+verified end-to-end on every release.
 
 ## License
 

@@ -137,7 +137,7 @@ The tag push fires both workflows simultaneously with `github.ref_name = {NEW_VE
 - [ ] `ghcr.io/groupdocs-metadata/metadata-net-mcp:{NEW_VERSION}` pullable
 - [ ] `docker.io/groupdocs/metadata-net-mcp:{NEW_VERSION}` pullable
 - [ ] Smoke test from a clean machine: `dnx GroupDocs.Metadata.Mcp@{NEW_VERSION} --yes`
-- [ ] MCP Registry: server listed at `https://registry.modelcontextprotocol.io/v0/servers/io.github.groupdocs-metadata%2Fgroupdocs-metadata-mcp`
+- [ ] MCP Registry: `https://registry.modelcontextprotocol.io/v0/servers/io.github.groupdocs-metadata%2Fgroupdocs-metadata-mcp/versions/latest` returns 200 with `version` = `{NEW_VERSION}` and `_meta.io.modelcontextprotocol.registry/official.isLatest` = `true` (note: the slash in the server name must be URL-encoded as `%2F`, and the route requires the `/versions/latest` suffix — there is no bare `/v0/servers/{name}` endpoint)
 
 ### 7. Re-running a failed release
 
