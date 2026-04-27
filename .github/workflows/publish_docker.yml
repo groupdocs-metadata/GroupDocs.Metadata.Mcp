@@ -92,6 +92,8 @@ jobs:
           file: docker/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
           tags: |
             ${{ steps.images.outputs.ghcr }}:${{ steps.version.outputs.version }}
             ${{ steps.images.outputs.ghcr }}:latest

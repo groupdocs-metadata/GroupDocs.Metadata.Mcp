@@ -46,4 +46,9 @@
     <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="$(SkiaSharp)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- GroupDocs.Metadata's image-format paths (JPEG, PNG, image-bearing PDFs) call System.Drawing.Common 6.0.0 internally. On non-Windows that throws PlatformNotSupportedException unless this flag is set. Pair with libgdiplus + libfontconfig1 in docker/Dockerfile. Drop once upstream migrates off System.Drawing — flag was removed in System.Drawing.Common 7.0+. -->
+    <RuntimeHostConfigurationOption Include="System.Drawing.EnableUnixSupport" Value="true" />
+  </ItemGroup>
+
 </Project>
