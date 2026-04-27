@@ -41,4 +41,9 @@
     <PackageReference Include="ModelContextProtocol" Version="$(ModelContextProtocol)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- GroupDocs.Metadata's published nuspec only declares SkiaSharp (managed). On Linux, libSkiaSharp.so is missing without this — SKObject..cctor crashes. Drop once upstream nuspec includes the platform native asset packages. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="$(SkiaSharp)" />
+  </ItemGroup>
+
 </Project>

@@ -33,6 +33,8 @@
     <MicrosoftExtensionsHosting>10.0.5</MicrosoftExtensionsHosting>
     <ModelContextProtocol>1.1.0</ModelContextProtocol>
     <MicrosoftSourceLinkGithub>8.0.0</MicrosoftSourceLinkGithub>
+    <!-- Must match the SkiaSharp version $(GroupDocsMetadata) transitively pulls. Re-verify after every GroupDocsMetadata bump (ABI-incompatible otherwise). -->
+    <SkiaSharp>3.119.0</SkiaSharp>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet Common Settings">
