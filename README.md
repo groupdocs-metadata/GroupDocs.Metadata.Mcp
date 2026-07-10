@@ -17,7 +17,7 @@ Pulls the latest stable release on every invocation. To pin to a specific
 version (recommended for shared configs and CI), append `@<version>`:
 
 ```bash
-dnx GroupDocs.Metadata.Mcp@26.7.0 --yes
+dnx GroupDocs.Metadata.Mcp@26.7.1 --yes
 ```
 
 **Or install as a global dotnet tool:**
@@ -57,7 +57,9 @@ the tool response. The simplest zero-setup option on Linux/macOS is the
 | Tool | Description |
 |---|---|
 | `ReadMetadata` | Reads all metadata properties (author, title, creation date, custom properties) and returns them as JSON |
-| `RemoveMetadata` | Removes all metadata from a document and saves the cleaned file to storage |
+| `SearchMetadata` | Searches within one document and returns only matching properties (filter by category, name, or value) — e.g. "show me the author", "does this have GPS?" |
+| `WriteMetadata` | Sets, changes, or adds a property (Author, Title, Subject, Keywords, Comments, Copyright, Company, Manager) and saves the updated file |
+| `RemoveMetadata` | Removes metadata and saves a cleaned file. Strips everything by default, or only specific `categories` (gps, author, comments, company, dates, software, copyright, keywords, personal) |
 | `GetDocumentInfo` | Returns the file type, MIME type, page count, byte size, and encryption status as JSON — a lightweight structural check that does not enumerate metadata properties |
 
 ## Configuration
@@ -86,7 +88,7 @@ the tool response. The simplest zero-setup option on Linux/macOS is the
 ```
 
 > To pin to a specific version, replace `"GroupDocs.Metadata.Mcp"` with
-> `"GroupDocs.Metadata.Mcp@26.7.0"` in `args`. Pinning is recommended for
+> `"GroupDocs.Metadata.Mcp@26.7.1"` in `args`. Pinning is recommended for
 > shared / committed configs to avoid surprise upgrades.
 
 ## Usage with VS Code / GitHub Copilot
@@ -120,7 +122,7 @@ Alternatively, add manually to `.vscode/mcp.json`:
 ```
 
 > Same pinning rule as above — swap `"GroupDocs.Metadata.Mcp"` for
-> `"GroupDocs.Metadata.Mcp@26.7.0"` to lock to a specific release.
+> `"GroupDocs.Metadata.Mcp@26.7.1"` to lock to a specific release.
 
 ## Usage with Docker Compose
 
@@ -142,6 +144,7 @@ live in the companion repo
 - [Verify on the MCP registry](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/03-verify-mcp-registry.md)
 - [Use with Claude Desktop](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/04-use-with-claude-desktop.md)
 - [Use with VS Code / GitHub Copilot](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/05-use-with-vscode-copilot.md)
+- [Use with Cursor](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/07-use-with-cursor.md)
 - [Run the integration tests](https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp.Tests/blob/master/how-to/06-run-integration-tests.md)
 
 That repo also exercises every advertised tool against the **published** NuGet

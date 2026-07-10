@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Text;
 using System.Text.Json;
 using GroupDocs.Metadata.Options;
 using GroupDocs.Mcp.Core;
@@ -56,28 +55,11 @@ public static class GetDocumentInfoTool
         }
         catch (Exception ex)
         {
-            return FormatException(ex, resolved.FileName);
+            return ToolError.Format("Document-info lookup", resolved.FileName, ex);
         }
         finally
         {
             if (File.Exists(tempInput)) File.Delete(tempInput);
         }
-    }
-
-    // Surface engine failures (bad/corrupted input, missing native deps, unsupported
-    // formats) as a descriptive text response instead of MCP's opaque
-    // "An error occurred invoking 'get_document_info'". The response text starts with
-    // "Document-info lookup failed for '<file>': ...". Integration tests match this prefix.
-    private static string FormatException(Exception ex, string fileName)
-    {
-        var sb = new StringBuilder();
-        sb.Append($"Document-info lookup failed for '{fileName}': ");
-        sb.Append($"{ex.GetType().FullName}: {ex.Message}");
-        var inner = ex.InnerException;
-        for (int depth = 0; inner != null && depth < 5; depth++, inner = inner.InnerException)
-        {
-            sb.Append($" | inner({depth}): {inner.GetType().FullName}: {inner.Message}");
-        }
-        return sb.ToString();
     }
 }

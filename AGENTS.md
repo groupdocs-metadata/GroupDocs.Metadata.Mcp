@@ -13,12 +13,14 @@ Published to NuGet as `GroupDocs.Metadata.Mcp` with the `McpServer` package type
 | Tool | Description |
 |---|---|
 | `ReadMetadata` | Extract all metadata (author, title, dates, EXIF, XMP, IPTC, custom properties) from a document and return grouped JSON |
-| `RemoveMetadata` | Strip all metadata from a document and write a clean copy to storage |
+| `SearchMetadata` | Return only the properties matching a `category` / `nameContains` / `valueContains` filter (thin predicate layer over `FindProperties`) |
+| `WriteMetadata` | Set/add a property (Author, Title, Subject, Keywords, Comments, Copyright, Company, Manager) via the tag taxonomy and save the file |
+| `RemoveMetadata` | Strip all metadata (`Sanitize`) by default, or only specific `categories` (`RemoveProperties` by tag) |
 | `GetDocumentInfo` | Return file type, MIME type, page count, byte size, and encryption status as JSON (lightweight structural check; no metadata dump) |
 
-All three tools accept `FileInput` (resolved via `IFileResolver`) and an optional `password` for protected documents.
+All tools accept `FileInput` (resolved via `IFileResolver`) and an optional `password` for protected documents.
 
-**Error contract.** Each tool wraps its engine call in `try/catch` and, on failure, returns a descriptive string instead of MCP's opaque `"An error occurred invoking '<tool>'"`. The text starts with a per-tool prefix — `Metadata read failed for '<file>': …`, `Metadata removal failed for '<file>': …`, `Document-info lookup failed for '<file>': …` — followed by the exception type, message, and inner-exception chain. In evaluation mode `RemoveMetadata` surfaces the engine's `"Could not save the file. Evaluation only."` through this same path (so `IsError` stays false). File-not-found / resolution errors are raised *before* the try and propagate as normal MCP errors. When adding a tool, keep this contract.
+**Error contract.** Each tool wraps its engine call in `try/catch` and, on failure, returns a descriptive string instead of MCP's opaque `"An error occurred invoking '<tool>'"`. The text starts with a per-tool prefix — `Metadata read failed for '<file>': …`, `Metadata search failed for …`, `Metadata write failed for …`, `Metadata removal failed for …`, `Document-info lookup failed for …` — followed by the exception type, message, and inner-exception chain. The shared formatter lives in `Tools/ToolError.cs`. In evaluation mode `RemoveMetadata` surfaces the engine's `"Could not save the file. Evaluation only."` through this same path (so `IsError` stays false). File-not-found / resolution errors are raised *before* the try and propagate as normal MCP errors. When adding a tool, keep this contract.
 
 ## Folder layout
 
@@ -29,8 +31,12 @@ src/                                           ← all projects + sln + Director
     MetadataLicenseManager.cs                  ← applies GroupDocs.Total license
     Tools/
       ReadMetadataTool.cs                      ← [McpServerTool] — ReadMetadata
-      RemoveMetadataTool.cs                    ← [McpServerTool] — RemoveMetadata
+      SearchMetadataTool.cs                    ← [McpServerTool] — SearchMetadata
+      WriteMetadataTool.cs                     ← [McpServerTool] — WriteMetadata
+      RemoveMetadataTool.cs                    ← [McpServerTool] — RemoveMetadata (full + selective)
       GetDocumentInfoTool.cs                   ← [McpServerTool] — GetDocumentInfo
+      MetadataCategories.cs                    ← shared category→tag-predicate map (search + remove)
+      ToolError.cs                             ← shared "<op> failed for '<file>': …" formatter
     .mcp/
       server.json                              ← NuGet.org reads this to generate mcp.json snippet
     GroupDocs.Metadata.Mcp.csproj              ← PackageTypes=McpServer + ToolCommandName

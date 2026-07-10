@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Text;
 using System.Text.Json;
 using GroupDocs.Metadata.Options;
 using GroupDocs.Mcp.Core;
@@ -62,27 +61,11 @@ public static class ReadMetadataTool
         }
         catch (Exception ex)
         {
-            return FormatException("Metadata read", resolved.FileName, ex);
+            return ToolError.Format("Metadata read", resolved.FileName, ex);
         }
         finally
         {
             if (File.Exists(tempInput)) File.Delete(tempInput);
         }
-    }
-
-    // Surface engine failures (bad/corrupted input, missing native deps, unsupported
-    // formats) as a descriptive text response instead of MCP's opaque
-    // "An error occurred invoking 'read_metadata'". The response text starts with
-    // "Metadata read failed for '<file>': ...". Integration tests match this prefix.
-    private static string FormatException(string op, string file, Exception ex)
-    {
-        var sb = new StringBuilder();
-        sb.Append($"{op} failed for '{file}': {ex.GetType().FullName}: {ex.Message}");
-        var inner = ex.InnerException;
-        for (int d = 0; inner != null && d < 5; d++, inner = inner.InnerException)
-        {
-            sb.Append($" | inner({d}): {inner.GetType().FullName}: {inner.Message}");
-        }
-        return sb.ToString();
     }
 }

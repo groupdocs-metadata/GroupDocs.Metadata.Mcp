@@ -29,7 +29,7 @@ RUN apt-get update \
 # self-identify instead of inheriting the base image's misleading version.
 ARG VERSION=dev
 LABEL org.opencontainers.image.title="GroupDocs.Metadata.Mcp" \
-      org.opencontainers.image.description="MCP server exposing GroupDocs.Metadata for .NET as AI-callable tools (read_metadata, remove_metadata, get_document_info) for Claude, Cursor, GitHub Copilot, and other MCP agents." \
+      org.opencontainers.image.description="MCP server exposing GroupDocs.Metadata for .NET as AI-callable tools (read_metadata, search_metadata, write_metadata, remove_metadata, get_document_info) for Claude, Cursor, GitHub Copilot, and other MCP agents." \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.source="https://github.com/groupdocs-metadata/GroupDocs.Metadata.Mcp" \
       org.opencontainers.image.url="https://www.nuget.org/packages/GroupDocs.Metadata.Mcp" \
