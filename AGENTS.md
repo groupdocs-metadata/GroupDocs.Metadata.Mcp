@@ -14,8 +14,11 @@ Published to NuGet as `GroupDocs.Metadata.Mcp` with the `McpServer` package type
 |---|---|
 | `ReadMetadata` | Extract all metadata (author, title, dates, EXIF, XMP, IPTC, custom properties) from a document and return grouped JSON |
 | `RemoveMetadata` | Strip all metadata from a document and write a clean copy to storage |
+| `GetDocumentInfo` | Return file type, MIME type, page count, byte size, and encryption status as JSON (lightweight structural check; no metadata dump) |
 
-Both tools accept `FileInput` (resolved via `IFileResolver`) and an optional `password` for protected documents.
+All three tools accept `FileInput` (resolved via `IFileResolver`) and an optional `password` for protected documents.
+
+**Error contract.** Each tool wraps its engine call in `try/catch` and, on failure, returns a descriptive string instead of MCP's opaque `"An error occurred invoking '<tool>'"`. The text starts with a per-tool prefix — `Metadata read failed for '<file>': …`, `Metadata removal failed for '<file>': …`, `Document-info lookup failed for '<file>': …` — followed by the exception type, message, and inner-exception chain. In evaluation mode `RemoveMetadata` surfaces the engine's `"Could not save the file. Evaluation only."` through this same path (so `IsError` stays false). File-not-found / resolution errors are raised *before* the try and propagate as normal MCP errors. When adding a tool, keep this contract.
 
 ## Folder layout
 
@@ -27,6 +30,7 @@ src/                                           ← all projects + sln + Director
     Tools/
       ReadMetadataTool.cs                      ← [McpServerTool] — ReadMetadata
       RemoveMetadataTool.cs                    ← [McpServerTool] — RemoveMetadata
+      GetDocumentInfoTool.cs                   ← [McpServerTool] — GetDocumentInfo
     .mcp/
       server.json                              ← NuGet.org reads this to generate mcp.json snippet
     GroupDocs.Metadata.Mcp.csproj              ← PackageTypes=McpServer + ToolCommandName
@@ -45,7 +49,7 @@ docker/
 ## Dependencies
 
 - `GroupDocs.Mcp.Core` + `GroupDocs.Mcp.Local.Storage` — infrastructure NuGet packages from the [GroupDocs.Mcp.Core](https://github.com/groupdocs/GroupDocs.Mcp.Core) repo
-- `GroupDocs.Metadata` — the actual metadata engine
+- `GroupDocs.Metadata` — the actual metadata engine. As of **26.6.0** this is a TFM-split metapackage: under `net10.0` it resolves to the `GroupDocs.Metadata.Net80` runtime sub-package, which pulls `SkiaSharp` (+ native Win32/Linux assets) and `Aspose.Drawing` transitively. The old manual `SkiaSharp.NativeAssets.Linux.NoDependencies` workaround was therefore removed from the csproj. Linux runs need system `libfontconfig1` (Skia dlopens it); see `docker/Dockerfile` and [assets/2026-07-01.md](assets/2026-07-01.md) for the `System.Drawing`/`libgdiplus` follow-up.
 - `ModelContextProtocol` — MCP SDK for .NET
 - `Microsoft.Extensions.Hosting` — host builder for the stdio server
 

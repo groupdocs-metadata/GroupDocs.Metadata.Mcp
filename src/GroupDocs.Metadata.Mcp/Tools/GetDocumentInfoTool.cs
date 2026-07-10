@@ -9,19 +9,20 @@ using ModelContextProtocol.Server;
 namespace GroupDocs.Metadata.Mcp.Tools;
 
 [McpServerToolType]
-public static class ReadMetadataTool
+public static class GetDocumentInfoTool
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     [McpServerTool, Description(
-        "Reads all metadata properties from a document (author, title, creation date, custom properties) and returns them as JSON. " +
-        "Call this tool immediately whenever the user asks to read metadata, show document properties, or get author/title/date info. " +
-        "Do NOT pre-check whether files exist — just pass the filename the user provided. " +
-        "The tool resolves files from storage and returns an error with available files if a name is not found.")]
-    public static async Task<string> ReadMetadata(
+        "Returns the file type, size, page count, and encryption status of a document as JSON — a lightweight structural check that does NOT enumerate metadata properties (use ReadMetadata for that). " +
+        "Supports PDF, DOCX, XLSX, PPTX, JPEG, PNG, TIFF, MP3, MP4, WAV, AVI, and 50+ more document, image, and media formats. " +
+        "Call this tool whenever the user asks about a document's format, page count, byte size, or whether it is encrypted, without needing the full metadata dump. " +
+        "Do NOT pre-check whether the file exists — just pass the filename the user provided. " +
+        "Returns a JSON object with fields `fileName`, `fileFormat` (engine-reported format name), `mimeType`, `pageCount`, `sizeBytes`, and `isEncrypted`. " +
+        "On failure, the response text starts with 'Document-info lookup failed for' followed by the underlying exception type, message, and inner-exception chain.")]
+    public static async Task<string> GetDocumentInfo(
         IFileResolver resolver,
         ILicenseManager licenseManager,
-        OutputHelper output,
         FileInput file,
         [Description("Password for protected documents")] string? password = null)
     {
@@ -40,29 +41,22 @@ public static class ReadMetadataTool
                 : new Metadata(tempInput);
 
             var info = metadata.GetDocumentInfo();
-            var properties = metadata.FindProperties(_ => true);
 
-            var grouped = properties
-                .GroupBy(p => p.Descriptor?.Name ?? "Unknown")
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(p => new { name = p.Name, value = p.Value?.RawValue }).ToList());
-
-            var result = new
+            var payload = new
             {
+                fileName = resolved.FileName,
                 fileFormat = info.FileType.FileFormat.ToString(),
                 mimeType = info.FileType.MimeType,
                 pageCount = info.PageCount,
                 sizeBytes = info.Size,
                 isEncrypted = info.IsEncrypted,
-                properties = grouped
             };
 
-            return JsonSerializer.Serialize(result, JsonOptions);
+            return JsonSerializer.Serialize(payload, JsonOptions);
         }
         catch (Exception ex)
         {
-            return FormatException("Metadata read", resolved.FileName, ex);
+            return FormatException(ex, resolved.FileName);
         }
         finally
         {
@@ -72,16 +66,17 @@ public static class ReadMetadataTool
 
     // Surface engine failures (bad/corrupted input, missing native deps, unsupported
     // formats) as a descriptive text response instead of MCP's opaque
-    // "An error occurred invoking 'read_metadata'". The response text starts with
-    // "Metadata read failed for '<file>': ...". Integration tests match this prefix.
-    private static string FormatException(string op, string file, Exception ex)
+    // "An error occurred invoking 'get_document_info'". The response text starts with
+    // "Document-info lookup failed for '<file>': ...". Integration tests match this prefix.
+    private static string FormatException(Exception ex, string fileName)
     {
         var sb = new StringBuilder();
-        sb.Append($"{op} failed for '{file}': {ex.GetType().FullName}: {ex.Message}");
+        sb.Append($"Document-info lookup failed for '{fileName}': ");
+        sb.Append($"{ex.GetType().FullName}: {ex.Message}");
         var inner = ex.InnerException;
-        for (int d = 0; inner != null && d < 5; d++, inner = inner.InnerException)
+        for (int depth = 0; inner != null && depth < 5; depth++, inner = inner.InnerException)
         {
-            sb.Append($" | inner({d}): {inner.GetType().FullName}: {inner.Message}");
+            sb.Append($" | inner({depth}): {inner.GetType().FullName}: {inner.Message}");
         }
         return sb.ToString();
     }

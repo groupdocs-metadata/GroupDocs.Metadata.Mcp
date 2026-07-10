@@ -63,12 +63,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- GroupDocs.Metadata's published nuspec only declares SkiaSharp (managed). On Linux, libSkiaSharp.so is missing without this — SKObject..cctor crashes. Drop once upstream nuspec includes the platform native asset packages. -->
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="$(SkiaSharp)" />
-  </ItemGroup>
+    <!-- NOTE (26.6.0 TFM split): the manual SkiaSharp.NativeAssets.Linux.NoDependencies
+         workaround was removed here. The GroupDocs.Metadata.Net80 runtime sub-package
+         (resolved under net10.0) now declares SkiaSharp 3.119.2 + NativeAssets.Win32 +
+         NativeAssets.Linux transitively, so libSkiaSharp.so ships without our help.
+         Note the engine pulls the *full* NativeAssets.Linux (needs system libfontconfig1),
+         not the self-contained NoDependencies variant — libfontconfig1 is installed in
+         docker/Dockerfile and the Tests repo's integration.yml. -->
 
-  <ItemGroup>
-    <!-- GroupDocs.Metadata's image-format paths (JPEG, PNG, image-bearing PDFs) call System.Drawing.Common 6.0.0 internally. On non-Windows that throws PlatformNotSupportedException unless this flag is set. Pair with libgdiplus + libfontconfig1 in docker/Dockerfile. Drop once upstream migrates off System.Drawing — flag was removed in System.Drawing.Common 7.0+. -->
+    <!-- GroupDocs.Metadata's image-format paths (JPEG, PNG, image-bearing PDFs) historically
+         P/Invoked System.Drawing.Common on Linux; this flag enabled the libgdiplus fallback.
+         As of 26.6.0 the engine pulls System.Drawing.Common 8.0.0 (where this switch is a
+         NO-OP — it was removed in 7.0+) AND Aspose.Drawing 26.4.0 (a fully managed, cross-
+         platform GDI+ replacement). The flag is therefore inert today; it's kept as a
+         harmless marker pending CI confirmation on the 3-OS matrix that Aspose.Drawing
+         handles every image path with no libgdiplus dependency. See assets/2026-07-01.md. -->
     <RuntimeHostConfigurationOption Include="System.Drawing.EnableUnixSupport" Value="true" />
   </ItemGroup>
 

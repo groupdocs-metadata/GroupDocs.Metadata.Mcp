@@ -17,7 +17,7 @@ Pulls the latest stable release on every invocation. To pin to a specific
 version (recommended for shared configs and CI), append `@<version>`:
 
 ```bash
-dnx GroupDocs.Metadata.Mcp@26.5.1 --yes
+dnx GroupDocs.Metadata.Mcp@26.7.0 --yes
 ```
 
 **Or install as a global dotnet tool:**
@@ -35,12 +35,30 @@ docker run --rm -i \
   ghcr.io/groupdocs-metadata/metadata-net-mcp:latest
 ```
 
+## Native prerequisites
+
+The underlying GroupDocs engine uses `System.Drawing` (GDI+) for some
+operations. When you run the server **natively** (via `dnx` or the global
+dotnet tool) on Linux or macOS, install the native `libgdiplus` library first:
+
+| Platform | Setup |
+|---|---|
+| Windows | Nothing — GDI+ is built into the OS. |
+| Linux | `sudo apt-get install -y libgdiplus libfontconfig1` |
+| macOS | `brew install mono-libgdiplus` |
+| Docker | Nothing — the image already bundles `libgdiplus`. |
+
+Skipping this on Linux/macOS surfaces as `DllNotFoundException: libgdiplus` in
+the tool response. The simplest zero-setup option on Linux/macOS is the
+**Docker image**.
+
 ## Available MCP Tools
 
 | Tool | Description |
 |---|---|
 | `ReadMetadata` | Reads all metadata properties (author, title, creation date, custom properties) and returns them as JSON |
 | `RemoveMetadata` | Removes all metadata from a document and saves the cleaned file to storage |
+| `GetDocumentInfo` | Returns the file type, MIME type, page count, byte size, and encryption status as JSON — a lightweight structural check that does not enumerate metadata properties |
 
 ## Configuration
 
@@ -68,7 +86,7 @@ docker run --rm -i \
 ```
 
 > To pin to a specific version, replace `"GroupDocs.Metadata.Mcp"` with
-> `"GroupDocs.Metadata.Mcp@26.5.1"` in `args`. Pinning is recommended for
+> `"GroupDocs.Metadata.Mcp@26.7.0"` in `args`. Pinning is recommended for
 > shared / committed configs to avoid surprise upgrades.
 
 ## Usage with VS Code / GitHub Copilot
@@ -102,7 +120,7 @@ Alternatively, add manually to `.vscode/mcp.json`:
 ```
 
 > Same pinning rule as above — swap `"GroupDocs.Metadata.Mcp"` for
-> `"GroupDocs.Metadata.Mcp@26.5.1"` to lock to a specific release.
+> `"GroupDocs.Metadata.Mcp@26.7.0"` to lock to a specific release.
 
 ## Usage with Docker Compose
 

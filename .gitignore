@@ -38,6 +38,9 @@ build_out/
 code_sign/
 codesign.zip
 
+# Roslyn / language-server "lightweight solution" cache (per-project, machine-local)
+*.lscache
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*

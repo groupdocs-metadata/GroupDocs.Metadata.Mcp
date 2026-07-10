@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Text;
 using GroupDocs.Metadata.Options;
 using GroupDocs.Mcp.Core;
 using GroupDocs.Mcp.Core.Licensing;
@@ -49,10 +50,31 @@ public static class RemoveMetadataTool
             var prefix = licenseManager.IsLicensed ? string.Empty : "[Evaluation mode] Output may include watermarks.\n\n";
             return await output.BuildFileOutputAsync(savedPath, $"{prefix}Removed {removed} metadata package(s) from '{resolved.FileName}'");
         }
+        catch (Exception ex)
+        {
+            return FormatException("Metadata removal", resolved.FileName, ex);
+        }
         finally
         {
             if (File.Exists(tempInput)) File.Delete(tempInput);
             if (File.Exists(tempOutput)) File.Delete(tempOutput);
         }
+    }
+
+    // Surface engine failures as a descriptive text response instead of MCP's opaque
+    // "An error occurred invoking 'remove_metadata'". Note: in evaluation mode
+    // GroupDocs.Metadata.Save() throws "Could not save the file. Evaluation only." —
+    // that now returns here as "Metadata removal failed for '<file>': ...". The
+    // response text starts with "Metadata removal failed for '<file>': ...".
+    private static string FormatException(string op, string file, Exception ex)
+    {
+        var sb = new StringBuilder();
+        sb.Append($"{op} failed for '{file}': {ex.GetType().FullName}: {ex.Message}");
+        var inner = ex.InnerException;
+        for (int d = 0; inner != null && d < 5; d++, inner = inner.InnerException)
+        {
+            sb.Append($" | inner({d}): {inner.GetType().FullName}: {inner.Message}");
+        }
+        return sb.ToString();
     }
 }

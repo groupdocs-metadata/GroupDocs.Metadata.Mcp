@@ -24,17 +24,21 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions">
-    <GroupDocsMetadataMcp>26.5.1</GroupDocsMetadataMcp>
+    <GroupDocsMetadataMcp>26.7.0</GroupDocsMetadataMcp>
   </PropertyGroup>
 
   <PropertyGroup Label="External Dependency Versions">
     <GroupDocsMcpCore>26.4.1</GroupDocsMcpCore>
-    <GroupDocsMetadata>26.1.0</GroupDocsMetadata>
+    <!-- 26.6.0 is the first TFM-split release: the GroupDocs.Metadata metapackage
+         now resolves to the GroupDocs.Metadata.Net80 runtime sub-package under
+         net10.0, which itself declares SkiaSharp + SkiaSharp.NativeAssets.Win32 +
+         SkiaSharp.NativeAssets.Linux (native libSkiaSharp is now transitive — the
+         old manual NativeAssets.Linux.NoDependencies workaround is gone) and adds
+         Aspose.Drawing (managed GDI+ replacement). See assets/2026-07-01.md. -->
+    <GroupDocsMetadata>26.6.0</GroupDocsMetadata>
     <MicrosoftExtensionsHosting>10.0.5</MicrosoftExtensionsHosting>
     <ModelContextProtocol>1.1.0</ModelContextProtocol>
     <MicrosoftSourceLinkGithub>8.0.0</MicrosoftSourceLinkGithub>
-    <!-- Must match the SkiaSharp version $(GroupDocsMetadata) transitively pulls. Re-verify after every GroupDocsMetadata bump (ABI-incompatible otherwise). -->
-    <SkiaSharp>3.119.0</SkiaSharp>
   </PropertyGroup>
 
   <PropertyGroup Label="NuGet Common Settings">
