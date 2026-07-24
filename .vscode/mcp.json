@@ -9,6 +9,14 @@
     }
   ],
   "servers": {
+    "groupdocs-metadata": {
+      "type": "stdio",
+      "command": "dnx",
+      "args": ["GroupDocs.Metadata.Mcp", "--yes"],
+      "env": {
+        "GROUPDOCS_MCP_STORAGE_PATH": "${input:storage_path}"
+      }
+    },
     "groupdocs-metadata-dev": {
       "type": "stdio",
       "command": "dotnet",

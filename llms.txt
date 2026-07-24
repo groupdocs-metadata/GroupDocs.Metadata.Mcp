@@ -4,7 +4,7 @@ MCP server that exposes GroupDocs.Metadata for .NET — read, write, and remove 
 
 ## Install
 
-- With dnx (.NET 10 SDK, no install step): `dnx GroupDocs.Metadata.Mcp@26.7.1 --yes`
+- With dnx (.NET 10 SDK, no install step): `dnx GroupDocs.Metadata.Mcp@26.7.2 --yes`
 - As a global dotnet tool: `dotnet tool install -g GroupDocs.Metadata.Mcp` then run `groupdocs-metadata-mcp`
 - As a Docker container: `docker run --rm -i -v $(pwd)/documents:/data ghcr.io/groupdocs-metadata/metadata-net-mcp:latest`
 - Native prerequisite for native (dnx / global tool) runs on Linux and macOS: install libgdiplus — `sudo apt-get install -y libgdiplus libfontconfig1` on Linux, `brew install mono-libgdiplus` on macOS. Not needed on Windows (GDI+ built in) or in Docker (bundled in the image).
@@ -26,6 +26,10 @@ PDF, DOCX, XLSX, PPTX, JPEG, PNG, TIFF, MP3, MP4, WAV, AVI, and 110+ other docum
 - GROUPDOCS_MCP_STORAGE_PATH — base folder for input + output (defaults to current working directory)
 - GROUPDOCS_MCP_OUTPUT_PATH — optional, routes output files to a separate folder
 - GROUPDOCS_LICENSE_PATH — path to GroupDocs.Total.lic, omit for evaluation mode
+
+## Licensing
+
+The MCP server is MIT; the underlying GroupDocs.Metadata engine requires a license for production use. Evaluation mode (no license): A single server process can open at most 15 documents; further calls fail with an evaluation-cap error until the server restarts. Saving metadata changes (write / remove) is blocked without a license. Free 30-day temporary license: https://purchase.groupdocs.com/temporary-license/ — purchase: https://purchase.groupdocs.com/pricing/metadata/net
 
 ## Key links
 

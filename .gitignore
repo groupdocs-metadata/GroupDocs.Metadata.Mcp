@@ -52,3 +52,13 @@ nunit-*.xml
 
 # Claude Code local settings (user-specific allowlists, do not commit)
 .claude/
+
+# Internal working docs / prompts — MUST NOT be published to this public repo.
+docs/
+assets/clone-to-new-product.md
+assets/mcp-verifycation.md
+assets/mcp-tests-verification.md
+assets/mcp-products.md
+assets/improvement,md
+assets/2026-*.md
+assets/mcp-improve-plan.md
