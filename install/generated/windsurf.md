@@ -7,5 +7,5 @@ Windsurf has no MCP CLI - add the server via its config file:
 2. Merge in the contents of `windsurf.json` from this folder.
 3. Refresh the MCP server list.
 
-Remove `GROUPDOCS_LICENSE_PATH` from the pasted config to run in evaluation mode.
-Pin a version by replacing `GroupDocs.Metadata.Mcp` with `GroupDocs.Metadata.Mcp@26.7.2`.
+An empty `GROUPDOCS_LICENSE_PATH` in the pasted config runs in evaluation mode.
+Pin a version by replacing `GroupDocs.Metadata.Mcp` with `GroupDocs.Metadata.Mcp@26.7.3`.
