@@ -24,11 +24,11 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions">
-    <GroupDocsMetadataMcp>26.7.3</GroupDocsMetadataMcp>
+    <GroupDocsMetadataMcp>26.9.0</GroupDocsMetadataMcp>
   </PropertyGroup>
 
   <PropertyGroup Label="External Dependency Versions">
-    <GroupDocsMcpCore>26.4.1</GroupDocsMcpCore>
+    <GroupDocsMcpCore>26.9.0</GroupDocsMcpCore>
     <!-- 26.6.0 is the first TFM-split release: the GroupDocs.Metadata metapackage
          now resolves to the GroupDocs.Metadata.Net80 runtime sub-package under
          net10.0, which itself declares SkiaSharp + SkiaSharp.NativeAssets.Win32 +
