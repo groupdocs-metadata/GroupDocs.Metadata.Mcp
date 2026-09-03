@@ -1,5 +1,21 @@
 ## .NET gitignore — https://github.com/github/gitignore/blob/main/Dotnet.gitignore
 
+# User-specific files and IDE state
+# Never publish these: they embed absolute local paths and the developer's
+# machine layout (.suo and DocumentLayout.json carry full C:\Users\... paths).
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache/options directory
+.vs/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
@@ -53,12 +69,5 @@ nunit-*.xml
 # Claude Code local settings (user-specific allowlists, do not commit)
 .claude/
 
-# Internal working docs / prompts — MUST NOT be published to this public repo.
-docs/
-assets/clone-to-new-product.md
-assets/mcp-verifycation.md
-assets/mcp-tests-verification.md
-assets/mcp-products.md
-assets/improvement,md
-assets/2026-*.md
-assets/mcp-improve-plan.md
+# Internal working docs / prompts live in the cross-product work folder
+# (d:\Workspace\Aspose\sources\Projects\GroupDocs.MCP), not in this public repo.
