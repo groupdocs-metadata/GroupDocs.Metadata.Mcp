@@ -85,4 +85,28 @@ public class WriteMetadataToolTests
 
         Assert.Same(input, captured);
     }
+
+    [Fact]
+    public async Task WriteMetadata_UnknownMode_ReturnsDescriptiveError()
+    {
+        using var stream = new MemoryStream(new byte[] { 1, 2, 3 });
+        _resolver
+            .Setup(r => r.ResolveAsync(It.IsAny<FileInput>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ResolvedFile { FileName = "doc.pdf", Stream = stream });
+
+        var result = await WriteMetadataTool.WriteMetadata(
+            _resolver.Object,
+            _storage.Object,
+            _licenseManager.Object,
+            _output,
+            new FileInput { FilePath = "doc.pdf" },
+            "Author",
+            "ABC",
+            mode: "append");
+
+        Assert.StartsWith("Metadata write failed for 'doc.pdf':", result);
+        Assert.Contains("Unknown mode 'append'", result);
+        Assert.Contains("'set'", result);
+        Assert.Contains("'add'", result);
+    }
 }

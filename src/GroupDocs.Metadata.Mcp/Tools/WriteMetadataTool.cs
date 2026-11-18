@@ -45,6 +45,16 @@ public static class WriteMetadataTool
                 $"Unknown property '{property}'. Supported: Author, Title, Subject, Keywords, Comments, Copyright, Company, Manager."));
         }
 
+        var normalizedMode = (mode ?? "set").Trim();
+        var isAdd = string.Equals(normalizedMode, "add", StringComparison.OrdinalIgnoreCase);
+        var isSet = string.IsNullOrEmpty(normalizedMode)
+                    || string.Equals(normalizedMode, "set", StringComparison.OrdinalIgnoreCase);
+        if (!isAdd && !isSet)
+        {
+            return ToolError.Format("Metadata write", resolved.FileName, new ArgumentException(
+                $"Unknown mode '{mode}'. Use 'set' (replace, default) or 'add' (append to list fields)."));
+        }
+
         var ext = Path.GetExtension(resolved.FileName);
         var outputName = $"{Path.GetFileNameWithoutExtension(resolved.FileName)}_updated{ext}";
         var tempInput = Path.Combine(Path.GetTempPath(), $"gd_mcp_{Guid.NewGuid()}{ext}");
@@ -61,7 +71,6 @@ public static class WriteMetadataTool
                 : new Metadata(tempInput);
 
             var propertyValue = new PropertyValue(value);
-            var isAdd = string.Equals(mode, "add", StringComparison.OrdinalIgnoreCase);
 
             var affected = isAdd
                 ? metadata.AddProperties(predicate, propertyValue)
@@ -73,15 +82,20 @@ public static class WriteMetadataTool
                 affected = metadata.AddProperties(predicate, propertyValue);
 
             if (affected == 0)
-                return $"Metadata write for '{resolved.FileName}': property '{property}' is not applicable to this format (0 fields changed).";
+            {
+                return isAdd
+                    ? $"Metadata write for '{resolved.FileName}': could not add '{property}' — add mode only appends to list-capable fields (e.g. Keywords); this property may not support append for this format (0 fields changed)."
+                    : $"Metadata write for '{resolved.FileName}': property '{property}' is not applicable to this format (0 fields changed).";
+            }
 
             metadata.Save(tempOutput);
 
             var bytes = await File.ReadAllBytesAsync(tempOutput);
             var savedPath = await storage.WriteFileAsync(outputName, bytes, rewrite: false);
 
+            var verb = isAdd ? "Added" : "Set";
             var prefix = licenseManager.IsLicensed ? string.Empty : "[Evaluation mode] Output may include watermarks.\n\n";
-            return await output.BuildFileOutputAsync(savedPath, $"{prefix}Set {property} = '{value}' ({affected} field(s) updated) in '{resolved.FileName}'");
+            return await output.BuildFileOutputAsync(savedPath, $"{prefix}{verb} {property} = '{value}' ({affected} field(s) updated) in '{resolved.FileName}'");
         }
         catch (Exception ex)
         {
@@ -95,7 +109,7 @@ public static class WriteMetadataTool
     }
 
     // Friendly property name → tag predicate. Each maps to the right per-format field
-    // via the GroupDocs.Metadata Tags taxonomy (verified against 26.6.0).
+    // via the GroupDocs.Metadata Tags taxonomy.
     private static MetadataPredicate? PropertyPredicate(string property) => property?.Trim().ToLowerInvariant() switch
     {
         "author" or "creator"   => p => p.Tags.Contains(Tags.Person.Creator),

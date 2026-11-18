@@ -4,8 +4,9 @@ Running list of ideas, planned work, and known limitations for the
 GroupDocs.Metadata MCP server. Grouped by topic. Terse on purpose — each line is
 a ticket, not an essay. `[ ]` = open, `[x]` = shipped (kept for context).
 
-**Current surface (26.9.0):** `read_metadata`, `search_metadata`, `write_metadata`,
-`remove_metadata` (full + selective `categories`), `get_document_info`.
+**Current surface (26.11.0):** `read_metadata`, `search_metadata`, `write_metadata`,
+`remove_metadata` (full + selective `categories`), `get_document_info`, `get_license_status`
+(from Core).
 
 ---
 
@@ -21,31 +22,22 @@ reported and all 46 independently reproduced with control calls. A later validat
 
 ### MCP wrapper / packaging — this repo
 
-- [ ] **M1** PPTX/PPT completely broken — the Linux image is missing a native library —
-      **High**. A whole format family is dark on the Docker channel; the same calls succeed on
-      NuGet/Windows, which is why the 39/39 in-repo tests stayed green.
-      *Fix:* add the Aspose.Slides native runtime to this image, then add a per-tool smoke test to
-      image CI so a whole format family cannot go dark again.
-      **P1 — a Dockerfile line plus a CI smoke test.**
-- [ ] **M2** `mode:add` reports the wrong reason for failing — **Med**. `affected==0` falls back to
-      "not applicable" (`WriteMetadataTool.cs:64-76`), so the caller is sent the wrong way. Also:
-      **any mode string other than `add` silently means `set`.**
-      *Fix:* distinguish "unsupported mode" from "unsupported property", and reject unknown modes.
-      **P1 — one message fix that stops sending callers the wrong way.**
+- [ ] **M1** PPTX/PPT completely broken on Linux/Docker — **High**. Likely missing native assets;
+      same calls succeed on NuGet/Windows. Engine **26.8+** (now 26.11) pulls
+      `GroupDocs.CrossPlatform.NativeAssets` transitively — candidate fix; **verify with a Docker
+      PPTX smoke after release**. Still need a per-tool image-CI smoke so a format family cannot go
+      dark again. **P1**
+- [x] **M2** `mode:add` wrong failure reason + unknown modes silently = `set` — fixed in **26.11.0**.
 - [ ] **M3** Empty value accepted silently — **Low**. *Fix:* either reject it or name it explicitly
       (`cleared Author`). **P2**
 - [ ] **M4** Property categories are weak and undocumented — **Low**. *Impact:* agents filtering by
       category silently miss data. **P2**
 
-### Shared core — fixed once in `GroupDocs.Mcp.Core`, lands here on the next bump
+### Shared core — fixed in `GroupDocs.Mcp.Core` 26.9.0 (picked up here in 26.9.0)
 
-- [ ] **S1** (**M5**) Passing `fileName` crashes any tool — **High**. Unhandled
-      `ArgumentException` in `FileResolver.ResolveAsync`; the resolver call sits outside the
-      try/catch in every tool (`EraseMetadataTool.cs:34-36` and twins).
-- [ ] **S2** (**M6**) Missing files return an opaque error — **High**; listing capped at 20 entries.
-- [ ] **S3** `isError` is set on crashes but not on real failures — **Med**.
-
-Nothing to do in this repo for S1–S3 beyond re-testing after the Core bump.
+- [x] **S1** (**M5**) Passing `fileName` crashes any tool.
+- [x] **S2** (**M6**) Missing files return an opaque error; listing capped at 20 entries.
+- [x] **S3** `isError` is set on crashes but not on real failures.
 
 ### Product library — upstream
 
@@ -74,16 +66,17 @@ Nothing to do in this repo for S1–S3 beyond re-testing after the Core bump.
 - `System.Drawing.EnableUnixSupport` is inert on the current engine (removed in
   System.Drawing.Common 7.0+; engine now ships Aspose.Drawing). Kept as a marker
   until CI confirms `libgdiplus` can be dropped entirely.
-- nupkg is ~207 MiB against NuGet's 250 MB ceiling (multi-arch native Skia +
-  Aspose.Drawing). Watch this on every engine bump.
+- nupkg is ~243 MiB against NuGet's 250 MB ceiling after stripping exotic RIDs
+  (see `StripExoticRuntimeRids` in the csproj). Watch this on every engine bump —
+  a full untrimmed publish is ~307 MB and will fail NuGet publish.
 - Linux native runs need `libfontconfig1` (Skia dlopens it); macOS needs
   `libgdiplus` via Homebrew. Docker image bundles both.
-- **PPTX/PPT are currently dead on the Docker channel** (M1 above) while working on NuGet/Windows.
-  The channels are documented as interchangeable and are not.
+- **PPTX/PPT on Docker** — historically broken (M1); re-check after 26.11.0 ships with
+  `GroupDocs.CrossPlatform.NativeAssets`.
 
 ## Tools & functionality
 
-- [ ] **M2** correct the `mode:add` failure message and reject unknown modes. **P1**
+- [x] **M2** correct the `mode:add` failure message and reject unknown modes — 26.11.0.
 - [ ] **M3** handle empty values explicitly. **P2**
 - [ ] **M4** document and strengthen property categories. **P2**
 - [ ] `read_metadata` — add `format: summary | full` (default summary; omit
@@ -100,6 +93,7 @@ Nothing to do in this repo for S1–S3 beyond re-testing after the Core bump.
       from single-file `search_metadata`). **P2**
 - [x] `search_metadata`, `write_metadata`, selective `remove_metadata` — 26.7.1.
 - [x] `get_document_info` — 26.7.0.
+- [x] Metered licensing + `get_license_status` — 26.9.0.
 - Rejected for now: `export_metadata_json` (fold into `read_metadata`
   `format=canonical` instead of a near-duplicate tool); standalone
   `list_supported_formats` (low agent value — the engine supports ~110 formats;
@@ -129,7 +123,7 @@ Nothing to do in this repo for S1–S3 beyond re-testing after the Core bump.
 
 ## Documentation & discoverability
 
-- [ ] Document the PPTX/PPT channel gap until M1 lands. **P1**
+- [ ] Document the PPTX/PPT channel gap until M1 is confirmed fixed on 26.11. **P1**
 - [ ] `examples-index.json` — machine-readable scenario catalog (intent → tool →
       sample → prompt → expected keys). Only worth it if it doubles as the
       integration-test manifest. **P2**
@@ -142,8 +136,8 @@ Nothing to do in this repo for S1–S3 beyond re-testing after the Core bump.
 
 ## Platform & infra (longer-term)
 
-- [ ] Metered licensing (`GROUPDOCS_METERED_PUBLIC_KEY` / `_PRIVATE_KEY`) via
-      `GroupDocs.Mcp.Core`, plus the `get_license_status` tool. **P1**
+- [x] Metered licensing (`GROUPDOCS_METERED_PUBLIC_KEY` / `_PRIVATE_KEY`) via
+      `GroupDocs.Mcp.Core`, plus the `get_license_status` tool. — 26.9.0.
 - [ ] HTTP/SSE transport for shared/team deploys (stdio stays default). **P2**
 - [ ] Remote storage (URL / S3) via GroupDocs.Mcp.Core. **P2**
 - [ ] `doctor` smoke command (checks .NET, license, storage, tools/list). **P2**

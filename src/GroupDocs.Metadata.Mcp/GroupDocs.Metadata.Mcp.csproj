@@ -22,16 +22,18 @@
     <ToolCommandName>groupdocs-metadata-mcp</ToolCommandName>
   </PropertyGroup>
 
-  <!-- Strip native debug symbols (libSkiaSharp.pdb x3 ≈ 243 MB uncompressed)
-       from the published tools/ output BEFORE pack collects it. With these
-       PDBs included the nupkg lands at ~291 MB, exceeding NuGet.org's 250 MB
-       hard limit and failing publish with HTTP 413 RequestEntityTooLarge.
-       The managed-code PDB is preserved — only runtimes/<rid>/native/*.pdb
-       files are removed. We can't symbolize native frames in production
-       anyway. NOTE: <CopyDebugSymbolFilesFromPackages>false</...> does NOT
-       cover this path — runtimes/<rid>/native/*.pdb files reach the publish
-       output via a separate runtime-asset code path that property doesn't
-       intercept. An explicit Delete target after Publish does. -->
+  <!-- Keep the packed tools/ layout under NuGet.org's 250 MB hard limit.
+       Engine 26.11 pulls GroupDocs.CrossPlatform.NativeAssets (Aspose.Slides
+       drawing natives for PPTX/PPT) on top of multi-RID SkiaSharp — a full
+       publish lands ~307 MB and fails publish with HTTP 413. Two post-Publish
+       deletes bring the nupkg back under the ceiling:
+
+       1. Native PDBs (libSkiaSharp.pdb etc.) — useless in production; the
+          managed-code PDB is preserved. <CopyDebugSymbolFilesFromPackages>
+          does NOT cover runtimes/<rid>/native/*.pdb.
+       2. Exotic / rarely-used RID folders that agents don't run on (musl,
+          loongarch, riscv, 32-bit linux) plus the 32-bit Windows Slides
+          native. Kept RIDs: win(+x64/arm64), linux(+x64/arm64), osx(+x64/arm64). -->
   <Target Name="StripNativeRuntimePdbs" AfterTargets="Publish">
     <ItemGroup>
       <_NativeRuntimePdbs Include="$(PublishDir)runtimes/**/*.pdb" />
@@ -41,6 +43,27 @@
       Text="StripNativeRuntimePdbs: removed @(_NativeRuntimePdbs->Count()) native PDB file(s) from publish output to keep the nupkg under NuGet.org's 250 MB limit."
       Importance="high"
       Condition="@(_NativeRuntimePdbs->Count()) > 0" />
+  </Target>
+
+  <Target Name="StripExoticRuntimeRids" AfterTargets="StripNativeRuntimePdbs">
+    <ItemGroup>
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-musl-arm" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-musl-arm64" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-musl-loongarch64" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-musl-riscv64" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-musl-x64" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-loongarch64" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-riscv64" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-arm" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\linux-x86" />
+      <_ExoticRidDirs Include="$(PublishDir)runtimes\win-x86" />
+      <_ExoticRidFiles Include="$(PublishDir)runtimes\win\native\aspose.slides.drawing.capi_vc14x86.dll" />
+    </ItemGroup>
+    <RemoveDir Directories="@(_ExoticRidDirs)" Condition="Exists('%(_ExoticRidDirs.Identity)')" />
+    <Delete Files="@(_ExoticRidFiles)" />
+    <Message
+      Text="StripExoticRuntimeRids: dropped exotic RID folders + 32-bit Windows Slides native so the nupkg stays under NuGet.org's 250 MB limit."
+      Importance="high" />
   </Target>
 
   <ItemGroup>
@@ -63,21 +86,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- NOTE (26.6.0 TFM split): the manual SkiaSharp.NativeAssets.Linux.NoDependencies
-         workaround was removed here. The GroupDocs.Metadata.Net80 runtime sub-package
-         (resolved under net10.0) now declares SkiaSharp 3.119.2 + NativeAssets.Win32 +
-         NativeAssets.Linux transitively, so libSkiaSharp.so ships without our help.
-         Note the engine pulls the *full* NativeAssets.Linux (needs system libfontconfig1),
-         not the self-contained NoDependencies variant — libfontconfig1 is installed in
-         docker/Dockerfile and the Tests repo's integration.yml. -->
+    <!-- NOTE (TFM split): the manual SkiaSharp.NativeAssets.Linux.NoDependencies workaround
+         was removed after engine 26.6. As of 26.11.0 the GroupDocs.Metadata.Net100 runtime
+         (resolved under net10.0) declares SkiaSharp 3.119.2 + NativeAssets.Win32/Linux and
+         GroupDocs.CrossPlatform.NativeAssets transitively. The engine pulls the *full*
+         NativeAssets.Linux (needs system libfontconfig1), not NoDependencies —
+         libfontconfig1 is installed in docker/Dockerfile. -->
 
-    <!-- GroupDocs.Metadata's image-format paths (JPEG, PNG, image-bearing PDFs) historically
-         P/Invoked System.Drawing.Common on Linux; this flag enabled the libgdiplus fallback.
-         As of 26.6.0 the engine pulls System.Drawing.Common 8.0.0 (where this switch is a
-         NO-OP — it was removed in 7.0+) AND Aspose.Drawing 26.4.0 (a fully managed, cross-
-         platform GDI+ replacement). The flag is therefore inert today; it's kept as a
-         harmless marker pending CI confirmation on the 3-OS matrix that Aspose.Drawing
-         handles every image path with no libgdiplus dependency. See assets/2026-07-01.md. -->
+    <!-- GroupDocs.Metadata's image-format paths historically P/Invoked System.Drawing.Common
+         on Linux; this flag enabled the libgdiplus fallback. The engine now pulls
+         System.Drawing.Common 8.0.0 (where this switch is a NO-OP — removed in 7.0+) AND
+         Aspose.Drawing (managed GDI+ replacement). Kept as a harmless marker pending CI
+         confirmation that Aspose.Drawing covers every image path without libgdiplus. -->
     <RuntimeHostConfigurationOption Include="System.Drawing.EnableUnixSupport" Value="true" />
   </ItemGroup>
 

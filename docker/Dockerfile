@@ -11,14 +11,12 @@ FROM base AS final
 
 # Native graphics deps for GroupDocs.Metadata's image-format paths (JPEG, PNG,
 # image-bearing PDFs) on Linux.
-#   - libfontconfig1 is REQUIRED as of engine 26.6.0: its net8.0 runtime sub-package
-#     pulls the full SkiaSharp.NativeAssets.Linux (not the self-contained
-#     NoDependencies variant), whose libSkiaSharp.so dlopens libfontconfig.
-#   - libgdiplus is kept as a safety net. 26.6.0 pulls System.Drawing.Common 8.0.0
-#     (which no longer honours System.Drawing.EnableUnixSupport) alongside
-#     Aspose.Drawing 26.4.0, a managed cross-platform GDI+ replacement. If CI on
-#     the 3-OS matrix confirms Aspose.Drawing covers every image path, libgdiplus
-#     (and the csproj flag) can be dropped. See assets/2026-07-01.md.
+#   - libfontconfig1 is REQUIRED: the Net100 runtime pulls the full
+#     SkiaSharp.NativeAssets.Linux (not NoDependencies), whose libSkiaSharp.so
+#     dlopens libfontconfig.
+#   - libgdiplus is kept as a safety net alongside Aspose.Drawing. If CI on the
+#     3-OS matrix confirms Aspose.Drawing covers every image path, libgdiplus
+#     (and the csproj EnableUnixSupport flag) can be dropped.
 USER root
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libgdiplus libfontconfig1 \

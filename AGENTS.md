@@ -55,7 +55,7 @@ docker/
 ## Dependencies
 
 - `GroupDocs.Mcp.Core` + `GroupDocs.Mcp.Local.Storage` — infrastructure NuGet packages from the [GroupDocs.Mcp.Core](https://github.com/groupdocs/GroupDocs.Mcp.Core) repo
-- `GroupDocs.Metadata` — the actual metadata engine. As of **26.6.0** this is a TFM-split metapackage: under `net10.0` it resolves to the `GroupDocs.Metadata.Net80` runtime sub-package, which pulls `SkiaSharp` (+ native Win32/Linux assets) and `Aspose.Drawing` transitively. The old manual `SkiaSharp.NativeAssets.Linux.NoDependencies` workaround was therefore removed from the csproj. Linux runs need system `libfontconfig1` (Skia dlopens it); see `docker/Dockerfile` and [assets/2026-07-01.md](assets/2026-07-01.md) for the `System.Drawing`/`libgdiplus` follow-up.
+- `GroupDocs.Metadata` — the actual metadata engine. TFM-split since **26.6.0**; as of **26.11.0** under `net10.0` it resolves to `GroupDocs.Metadata.Net100`, which pulls `SkiaSharp` (+ native Win32/Linux assets), `Aspose.Drawing`, and `GroupDocs.CrossPlatform.NativeAssets` (needed for PPTX/PPT on Linux). The old manual `SkiaSharp.NativeAssets.Linux.NoDependencies` workaround was removed after 26.6. Linux runs need system `libfontconfig1` (Skia dlopens it); see `docker/Dockerfile`.
 - `ModelContextProtocol` — MCP SDK for .NET
 - `Microsoft.Extensions.Hosting` — host builder for the stdio server
 

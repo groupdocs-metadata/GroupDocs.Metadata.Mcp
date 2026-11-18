@@ -24,19 +24,18 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package Versions">
-    <GroupDocsMetadataMcp>26.9.0</GroupDocsMetadataMcp>
+    <GroupDocsMetadataMcp>26.11.0</GroupDocsMetadataMcp>
   </PropertyGroup>
 
   <PropertyGroup Label="External Dependency Versions">
     <GroupDocsMcpCore>26.9.0</GroupDocsMcpCore>
-    <!-- 26.6.0 is the first TFM-split release: the GroupDocs.Metadata metapackage
-         now resolves to the GroupDocs.Metadata.Net80 runtime sub-package under
-         net10.0, which itself declares SkiaSharp + SkiaSharp.NativeAssets.Win32 +
-         SkiaSharp.NativeAssets.Linux (native libSkiaSharp is now transitive — the
-         old manual NativeAssets.Linux.NoDependencies workaround is gone) and adds
-         Aspose.Drawing (managed GDI+ replacement). See assets/2026-07-01.md. -->
-    <GroupDocsMetadata>26.6.0</GroupDocsMetadata>
-    <MicrosoftExtensionsHosting>10.0.5</MicrosoftExtensionsHosting>
+    <!-- TFM-split since 26.6.0. As of 26.11.0 the metapackage resolves to
+         GroupDocs.Metadata.Net100 under net10.0 (was Net80 fallback before).
+         Net100 declares SkiaSharp + NativeAssets.Win32/Linux, Aspose.Drawing,
+         and GroupDocs.CrossPlatform.NativeAssets (added in 26.8 — needed for
+         PPTX/PPT on Linux). Watch nupkg size vs NuGet's 250 MB ceiling. -->
+    <GroupDocsMetadata>26.11.0</GroupDocsMetadata>
+    <MicrosoftExtensionsHosting>10.0.15</MicrosoftExtensionsHosting>
     <ModelContextProtocol>1.1.0</ModelContextProtocol>
     <MicrosoftSourceLinkGithub>8.0.0</MicrosoftSourceLinkGithub>
   </PropertyGroup>
